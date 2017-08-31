@@ -2,8 +2,8 @@ language: bash
 services: docker
 
 env:
-  - VERSION=1.19.0 VARIANT=stretch
-  - VERSION=1.19.0 VARIANT=jessie
+  - VERSION=1.20.0 VARIANT=stretch
+  - VERSION=1.20.0 VARIANT=jessie
 
 install:
   - git clone https://github.com/docker-library/official-images.git ~/official-images
