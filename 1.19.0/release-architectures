@@ -1,7 +1,0 @@
-# see https://github.com/rust-lang-nursery/rustup.rs#other-installation-methods
-
-# bashbrew-arch dpkg-arch rust-arch
-amd64   amd64   x86_64-unknown-linux-gnu
-arm32v7 armhf   armv7-unknown-linux-gnueabihf
-arm64v8 arm64   aarch64-unknown-linux-gnu
-i386    i386    i686-unknown-linux-gnu
