@@ -2,6 +2,8 @@ language: bash
 services: docker
 
 env:
+  - VERSION=1.23.0-beta.1 VARIANT=stretch
+  - VERSION=1.23.0-beta.1 VARIANT=jessie
   - VERSION=1.22.1 VARIANT=stretch
   - VERSION=1.22.1 VARIANT=jessie
 
