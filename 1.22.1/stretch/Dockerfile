@@ -22,6 +22,7 @@ RUN set -eux; \
     chmod +x rustup-init; \
     ./rustup-init -y --no-modify-path --default-toolchain 1.22.1; \
     rm rustup-init; \
+    mv $CARGO_HOME/bin/* /usr/local/bin/; \
     chmod -R a+w $RUSTUP_HOME $CARGO_HOME; \
     rustup --version; \
     cargo --version; \
