@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 declare -A aliases=(
-	[1.23.0]='1 1.23 latest'
+	[1.24.0]='1 1.24 latest'
 )
 
 defaultDebianSuite='stretch'
