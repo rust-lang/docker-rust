@@ -2,6 +2,7 @@ language: bash
 services: docker
 
 env:
+  - VERSION=1.25.0 VARIANT=stretch/slim
   - VERSION=1.25.0 VARIANT=stretch
   - VERSION=1.25.0 VARIANT=jessie
 
@@ -10,11 +11,11 @@ install:
 
 before_script:
   - env | sort
-  - cd "$VERSION"
-  - image="rust:$VERSION${VARIANT:+-$VARIANT}"
+  - cd "$VERSION/$VARIANT"
+  - slash='/'; image="rust:${VERSION}-${VARIANT//$slash/-}"
 
 script:
-  - travis_retry docker build -t "$image" "${VARIANT:-.}"
+  - travis_retry docker build -t "$image" .
   - ~/official-images/test/run.sh "$image"
 
 after_script:

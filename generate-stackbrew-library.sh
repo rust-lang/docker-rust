@@ -6,7 +6,7 @@ declare -A aliases=(
 )
 
 defaultDebianSuite='stretch'
-declare -A debianSuite=(
+declare -A debianSuites=(
 )
 
 self="$(basename "$BASH_SOURCE")"
@@ -57,36 +57,46 @@ join() {
 }
 
 for version in "${versions[@]}"; do
-	versionAliases=(
-		$version
-	)
-	versionAliases+=(
-		${aliases[$version]:-}
-	)
+	debianSuite="${debianSuites[$version]:-$defaultDebianSuite}"
 
 	for v in \
-			stretch jessie \
+			{stretch,jessie}{,/slim} \
 	; do
 		dir="$version/$v"
+		variant="$(basename "$v")"
+
+		if [ "$variant" = 'slim' ]; then
+			# convert "slim" into "slim-jessie"
+			# https://github.com/docker-library/ruby/pull/142#issuecomment-320012893
+			variant="$variant-$(basename "$(dirname "$v")")"
+		fi
 
 		[ -f "$dir/Dockerfile" ] || continue
 
-		variant="$(basename "$v")"
-		versionSuite="${debianSuite[$version]:-$defaultDebianSuite}"
-
 		commit="$(dirCommit "$dir")"
 
-		baseAliases=( "${versionAliases[@]}" )
-		variantAliases=( "${baseAliases[@]/%/-$variant}" )
+		versionAliases=(
+			$version
+			${aliases[$version]:-}
+		)
+
+		variantAliases=( "${versionAliases[@]/%/-$variant}" )
+		case "$variant" in
+			*-"$debianSuite") # "slim-stretch", etc need slim
+				variantAliases+=( "${versionAliases[@]/%/-${variant%-$debianSuite}}" )
+				;;
+		esac
 		variantAliases=( "${variantAliases[@]//latest-/}" )
 
-		if [ "$variant" = "$versionSuite" ]; then
-			variantAliases+=( "${baseAliases[@]}" )
-		fi
+		versionSuite="${debianSuites[$version]:-$defaultDebianSuite}"
 
 		case "$v" in
 			*)  variantArches="$(variantArches "$version" "$v")" ;;
 		esac
+
+		if [ "$variant" = "$debianSuite" ]; then
+			variantAliases+=( "${versionAliases[@]}" )
+		fi
 
 		echo
 		cat <<-EOE
@@ -95,6 +105,5 @@ for version in "${versions[@]}"; do
 			GitCommit: $commit
 			Directory: $dir
 		EOE
-        [ "$variant" = "$v" ] || echo "Constraints: $variant"
 	done
 done
