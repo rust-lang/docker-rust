@@ -4,6 +4,7 @@ services: docker
 env:
   - VERSION=1.25.0 VARIANT=stretch/slim
   - VERSION=1.25.0 VARIANT=stretch
+  - VERSION=1.25.0 VARIANT=jessie/slim
   - VERSION=1.25.0 VARIANT=jessie
 
 install:
