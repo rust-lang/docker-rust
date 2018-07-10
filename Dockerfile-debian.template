@@ -6,10 +6,7 @@ ENV RUSTUP_HOME=/usr/local/rustup \
     RUST_VERSION=%%RUST-VERSION%%
 
 RUN set -eux; \
-    \
-# this "case" statement is generated via "update.sh"
     %%ARCH-CASE%%; \
-    \
     url="https://static.rust-lang.org/rustup/archive/%%RUSTUP-VERSION%%/${rustArch}/rustup-init"; \
     wget "$url"; \
     echo "${rustupSha256} *rustup-init" | sha256sum -c -; \

@@ -13,7 +13,6 @@ RUN set -eux; \
         libc6-dev \
         wget \
         ; \
-    \
 # this "case" statement is generated via "update.sh"
     dpkgArch="$(dpkg --print-architecture)"; \
     case "${dpkgArch##*-}" in \
@@ -23,7 +22,6 @@ RUN set -eux; \
         i386) rustArch='i686-unknown-linux-gnu'; rustupSha256='57b85f60702198431735b5f54b083956bc148449edc82147542521f75d5dbd13' ;; \
         *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \
     esac; \
-    \
     url="https://static.rust-lang.org/rustup/archive/1.12.0/${rustArch}/rustup-init"; \
     wget "$url"; \
     echo "${rustupSha256} *rustup-init" | sha256sum -c -; \
@@ -34,7 +32,6 @@ RUN set -eux; \
     rustup --version; \
     cargo --version; \
     rustc --version; \
-    \
     apt-get remove -y --auto-remove \
         wget \
         ; \
