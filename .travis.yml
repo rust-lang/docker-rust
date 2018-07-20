@@ -2,10 +2,10 @@ language: bash
 services: docker
 
 env:
-  - VERSION=1.27.1 VARIANT=stretch/slim
-  - VERSION=1.27.1 VARIANT=stretch
-  - VERSION=1.27.1 VARIANT=jessie/slim
-  - VERSION=1.27.1 VARIANT=jessie
+  - VERSION=1.27.2 VARIANT=stretch/slim
+  - VERSION=1.27.2 VARIANT=stretch
+  - VERSION=1.27.2 VARIANT=jessie/slim
+  - VERSION=1.27.2 VARIANT=jessie
 
 install:
   - git clone https://github.com/docker-library/official-images.git ~/official-images
