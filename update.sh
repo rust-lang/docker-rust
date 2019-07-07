@@ -29,7 +29,7 @@ for version in "${versions[@]}"; do
     linuxArchCase+=$'        ''*) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; '$'\\\n'
     linuxArchCase+=$'    ''esac'
 
-    for variant in jessie stretch; do
+    for variant in stretch buster; do
         if [ -d "$version/$variant" ]; then
             sed -r \
                 -e 's!%%RUST-VERSION%%!'"$version"'!g' \
