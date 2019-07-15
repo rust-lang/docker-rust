@@ -60,7 +60,7 @@ for version in "${versions[@]}"; do
 	debianSuite="${debianSuites[$version]:-$defaultDebianSuite}"
 
 	for v in \
-			{stretch,jessie}{,/slim} \
+			{stretch,buster}{,/slim} \
 	; do
 		dir="$version/$v"
 		variant="$(basename "$v")"
