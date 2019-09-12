@@ -23,10 +23,18 @@ debian_variants = [
     "buster",
 ]
 
-default_variant = "buster"
+default_debian_variant = "buster"
 
-def rustup_hash(arch):
-    url = f"https://static.rust-lang.org/rustup/archive/{rustup_version}/{arch.rust}/rustup-init.sha256"
+alpine_versions = [
+    "3.10",
+]
+
+default_alpine_version = "3.10"
+
+def rustup_hash(arch, version=None):
+    if version is None:
+        version = rustup_version
+    url = f"https://static.rust-lang.org/rustup/archive/{version}/{arch}/rustup-init.sha256"
     with request.urlopen(url) as f:
         return f.read().decode('utf-8').split()[0]
 
@@ -45,7 +53,7 @@ def update_debian():
     arch_case = 'dpkgArch="$(dpkg --print-architecture)"; \\\n'
     arch_case += '    case "${dpkgArch##*-}" in \\\n'
     for arch in debian_arches:
-        hash = rustup_hash(arch)
+        hash = rustup_hash(arch.rust)
         arch_case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
     arch_case += '        *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \\\n'
     arch_case += '    esac'
@@ -68,6 +76,18 @@ def update_debian():
             .replace("%%ARCH-CASE%%", arch_case)
         write_file(f"{rust_version}/{variant}/slim/Dockerfile", rendered)
 
+def update_alpine():
+    template = read_file("Dockerfile-alpine.template")
+    alpine_rustup_version = "1.19.0"
+
+    for version in alpine_versions:
+        rendered = template \
+            .replace("%%RUST-VERSION%%", rust_version) \
+            .replace("%%RUSTUP-VERSION%%", alpine_rustup_version) \
+            .replace("%%TAG%%", version) \
+            .replace("%%RUSTUP-SHA256%%", rustup_hash("x86_64-unknown-linux-musl", alpine_rustup_version))
+        write_file(f"{rust_version}/alpine{version}/Dockerfile", rendered)
+
 def update_travis():
     file = ".travis.yml"
     config = read_file(file)
@@ -76,6 +96,9 @@ def update_travis():
     for variant in debian_variants:
         versions += f"  - VERSION={rust_version} VARIANT={variant}\n"
         versions += f"  - VERSION={rust_version} VARIANT={variant}/slim\n"
+
+    for version in alpine_versions:
+        versions += f"  - VERSION={rust_version} VARIANT=alpine{version}\n"
 
     marker = "#VERSIONS\n"
     split = config.split(marker)
@@ -120,7 +143,7 @@ GitRepo: https://github.com/rust-lang-nursery/docker-rust.git
         for version_tag in version_tags():
             tags.append(f"{version_tag}-{variant}")
         tags.append(variant)
-        if variant == default_variant:
+        if variant == default_debian_variant:
             for version_tag in version_tags():
                 tags.append(version_tag)
             tags.append("latest")
@@ -134,7 +157,7 @@ GitRepo: https://github.com/rust-lang-nursery/docker-rust.git
         for version_tag in version_tags():
             tags.append(f"{version_tag}-slim-{variant}")
         tags.append(f"slim-{variant}")
-        if variant == default_variant:
+        if variant == default_debian_variant:
             for version_tag in version_tags():
                 tags.append(f"{version_tag}-slim")
             tags.append("slim")
@@ -143,6 +166,21 @@ GitRepo: https://github.com/rust-lang-nursery/docker-rust.git
                 tags,
                 map(lambda a: a.bashbrew, debian_arches),
                 os.path.join(rust_version, variant, "slim"))
+
+    for version in alpine_versions:
+        tags = []
+        for version_tag in version_tags():
+            tags.append(f"{version_tag}-alpine{version}")
+        tags.append(f"alpine{version}")
+        if version == default_alpine_version:
+            for version_tag in version_tags():
+                tags.append(f"{version_tag}-alpine")
+            tags.append("alpine")
+
+        library += single_library(
+            tags,
+            ["amd64"],
+            os.path.join(rust_version, f"alpine{version}"))
 
     print(library)
 
@@ -157,6 +195,7 @@ if __name__ == "__main__":
     task = sys.argv[1]
     if task == "update":
         update_debian()
+        update_alpine()
         update_travis()
     elif task == "generate-stackbrew-library":
         generate_stackbrew_library()
