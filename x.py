@@ -6,8 +6,8 @@ import os
 import subprocess
 import sys
 
-rust_version = "1.37.0"
-rustup_version = "1.18.3"
+rust_version = "1.38.0"
+rustup_version = "1.19.0"
 
 DebianArch = namedtuple("DebianArch", ["bashbrew", "dpkg", "rust"])
 
@@ -31,10 +31,8 @@ alpine_versions = [
 
 default_alpine_version = "3.10"
 
-def rustup_hash(arch, version=None):
-    if version is None:
-        version = rustup_version
-    url = f"https://static.rust-lang.org/rustup/archive/{version}/{arch}/rustup-init.sha256"
+def rustup_hash(arch):
+    url = f"https://static.rust-lang.org/rustup/archive/{rustup_version}/{arch}/rustup-init.sha256"
     with request.urlopen(url) as f:
         return f.read().decode('utf-8').split()[0]
 
@@ -78,14 +76,13 @@ def update_debian():
 
 def update_alpine():
     template = read_file("Dockerfile-alpine.template")
-    alpine_rustup_version = "1.19.0"
 
     for version in alpine_versions:
         rendered = template \
             .replace("%%RUST-VERSION%%", rust_version) \
-            .replace("%%RUSTUP-VERSION%%", alpine_rustup_version) \
+            .replace("%%RUSTUP-VERSION%%", rustup_version) \
             .replace("%%TAG%%", version) \
-            .replace("%%RUSTUP-SHA256%%", rustup_hash("x86_64-unknown-linux-musl", alpine_rustup_version))
+            .replace("%%RUSTUP-SHA256%%", rustup_hash("x86_64-unknown-linux-musl"))
         write_file(f"{rust_version}/alpine{version}/Dockerfile", rendered)
 
 def update_travis():
