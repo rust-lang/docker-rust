@@ -21,6 +21,7 @@ RUN set -eux; \
     ./rustup-init -y --no-modify-path --default-toolchain $RUST_VERSION; \
     rm rustup-init; \
     chmod -R a+w $RUSTUP_HOME $CARGO_HOME; \
+    cargo install cargo-audit; \
     rustup --version; \
     cargo --version; \
     rustc --version;
