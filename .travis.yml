@@ -3,11 +3,21 @@ services: docker
 
 env:
 #VERSIONS
-  - VERSION=1.39.0 VARIANT=stretch
-  - VERSION=1.39.0 VARIANT=stretch/slim
-  - VERSION=1.39.0 VARIANT=buster
-  - VERSION=1.39.0 VARIANT=buster/slim
-  - VERSION=1.39.0 VARIANT=alpine3.10
+  - VERSION=1.39.0 VARIANT=stretch-minimal
+  - VERSION=1.39.0 VARIANT=stretch-minimal/slim
+  - VERSION=1.39.0 VARIANT=stretch-default
+  - VERSION=1.39.0 VARIANT=stretch-default/slim
+  - VERSION=1.39.0 VARIANT=stretch-full
+  - VERSION=1.39.0 VARIANT=stretch-full/slim
+  - VERSION=1.39.0 VARIANT=buster-minimal
+  - VERSION=1.39.0 VARIANT=buster-minimal/slim
+  - VERSION=1.39.0 VARIANT=buster-default
+  - VERSION=1.39.0 VARIANT=buster-default/slim
+  - VERSION=1.39.0 VARIANT=buster-full
+  - VERSION=1.39.0 VARIANT=buster-full/slim
+  - VERSION=1.39.0 VARIANT=alpine3.10-minimal
+  - VERSION=1.39.0 VARIANT=alpine3.10-default
+  - VERSION=1.39.0 VARIANT=alpine3.10-full
 #VERSIONS
 
 install:

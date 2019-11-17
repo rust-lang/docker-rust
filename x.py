@@ -31,6 +31,12 @@ alpine_versions = [
 
 default_alpine_version = "3.10"
 
+rustup_profiles = [
+    "minimal",
+    "default",
+    "full",
+]
+
 def rustup_hash(arch):
     url = f"https://static.rust-lang.org/rustup/archive/{rustup_version}/{arch}/rustup-init.sha256"
     with request.urlopen(url) as f:
@@ -60,30 +66,35 @@ def update_debian():
     slim_template = read_file("Dockerfile-slim.template")
 
     for variant in debian_variants:
-        rendered = template \
-            .replace("%%RUST-VERSION%%", rust_version) \
-            .replace("%%RUSTUP-VERSION%%", rustup_version) \
-            .replace("%%DEBIAN-SUITE%%", variant) \
-            .replace("%%ARCH-CASE%%", arch_case)
-        write_file(f"{rust_version}/{variant}/Dockerfile", rendered)
+        for rustup_profile in rustup_profiles:
+            rendered = template \
+                .replace("%%RUST-VERSION%%", rust_version) \
+                .replace("%%RUSTUP-VERSION%%", rustup_version) \
+                .replace("%%DEBIAN-SUITE%%", variant) \
+                .replace("%%ARCH-CASE%%", arch_case) \
+                .replace("%%RUSTUP-PROFILE%%", rustup_profile)
+            write_file(f"{rust_version}/{variant}-{rustup_profile}/Dockerfile", rendered)
 
-        rendered = slim_template \
-            .replace("%%RUST-VERSION%%", rust_version) \
-            .replace("%%RUSTUP-VERSION%%", rustup_version) \
-            .replace("%%DEBIAN-SUITE%%", variant) \
-            .replace("%%ARCH-CASE%%", arch_case)
-        write_file(f"{rust_version}/{variant}/slim/Dockerfile", rendered)
+            rendered = slim_template \
+                .replace("%%RUST-VERSION%%", rust_version) \
+                .replace("%%RUSTUP-VERSION%%", rustup_version) \
+                .replace("%%DEBIAN-SUITE%%", variant) \
+                .replace("%%ARCH-CASE%%", arch_case) \
+                .replace("%%RUSTUP-PROFILE%%", rustup_profile)
+            write_file(f"{rust_version}/{variant}-{rustup_profile}/slim/Dockerfile", rendered)
 
 def update_alpine():
     template = read_file("Dockerfile-alpine.template")
 
     for version in alpine_versions:
-        rendered = template \
-            .replace("%%RUST-VERSION%%", rust_version) \
-            .replace("%%RUSTUP-VERSION%%", rustup_version) \
-            .replace("%%TAG%%", version) \
-            .replace("%%RUSTUP-SHA256%%", rustup_hash("x86_64-unknown-linux-musl"))
-        write_file(f"{rust_version}/alpine{version}/Dockerfile", rendered)
+        for rustup_profile in rustup_profiles:
+            rendered = template \
+                .replace("%%RUST-VERSION%%", rust_version) \
+                .replace("%%RUSTUP-VERSION%%", rustup_version) \
+                .replace("%%TAG%%", version) \
+                .replace("%%RUSTUP-SHA256%%", rustup_hash("x86_64-unknown-linux-musl")) \
+                .replace("%%RUSTUP-PROFILE%%", rustup_profile)
+            write_file(f"{rust_version}/alpine{version}-{rustup_profile}/Dockerfile", rendered)
 
 def update_travis():
     file = ".travis.yml"
@@ -91,11 +102,13 @@ def update_travis():
 
     versions = ""
     for variant in debian_variants:
-        versions += f"  - VERSION={rust_version} VARIANT={variant}\n"
-        versions += f"  - VERSION={rust_version} VARIANT={variant}/slim\n"
+        for rustup_profile in rustup_profiles:
+            versions += f"  - VERSION={rust_version} VARIANT={variant}-{rustup_profile}\n"
+            versions += f"  - VERSION={rust_version} VARIANT={variant}-{rustup_profile}/slim\n"
 
     for version in alpine_versions:
-        versions += f"  - VERSION={rust_version} VARIANT=alpine{version}\n"
+        for rustup_profile in rustup_profiles:
+            versions += f"  - VERSION={rust_version} VARIANT=alpine{version}-{rustup_profile}\n"
 
     marker = "#VERSIONS\n"
     split = config.split(marker)
@@ -136,48 +149,50 @@ GitRepo: https://github.com/rust-lang-nursery/docker-rust.git
 """
 
     for variant in debian_variants:
-        tags = []
-        for version_tag in version_tags():
-            tags.append(f"{version_tag}-{variant}")
-        tags.append(variant)
-        if variant == default_debian_variant:
+        for rustup_profile in rustup_profiles:
+            tags = []
             for version_tag in version_tags():
-                tags.append(version_tag)
-            tags.append("latest")
+                tags.append(f"{version_tag}-{variant}-{rustup_profile}")
+            tags.append(f"{variant}-{rustup_profile}")
+            if variant == default_debian_variant:
+                for version_tag in version_tags():
+                    tags.append(f"version_tag-{rustup_profile}")
+                tags.append(f"latest-{rustup_profile}")
 
-        library += single_library(
-                tags,
-                map(lambda a: a.bashbrew, debian_arches),
-                os.path.join(rust_version, variant))
+            library += single_library(
+                    tags,
+                    map(lambda a: a.bashbrew, debian_arches),
+                    os.path.join(rust_version, variant))
 
-        tags = []
-        for version_tag in version_tags():
-            tags.append(f"{version_tag}-slim-{variant}")
-        tags.append(f"slim-{variant}")
-        if variant == default_debian_variant:
+            tags = []
             for version_tag in version_tags():
-                tags.append(f"{version_tag}-slim")
-            tags.append("slim")
+                tags.append(f"{version_tag}-slim-{variant}-{rustup_profile}")
+            tags.append(f"slim-{variant}-{rustup_profile}")
+            if variant == default_debian_variant:
+                for version_tag in version_tags():
+                    tags.append(f"{version_tag}-slim-{rustup_profile}")
+                tags.append(f"slim-{rustup_profile}")
 
-        library += single_library(
-                tags,
-                map(lambda a: a.bashbrew, debian_arches),
-                os.path.join(rust_version, variant, "slim"))
+            library += single_library(
+                    tags,
+                    map(lambda a: a.bashbrew, debian_arches),
+                    os.path.join(rust_version, f"{variant}-{rustup_profile}", "slim"))
 
     for version in alpine_versions:
-        tags = []
-        for version_tag in version_tags():
-            tags.append(f"{version_tag}-alpine{version}")
-        tags.append(f"alpine{version}")
-        if version == default_alpine_version:
+        for rustup_profile in rustup_profiles:
+            tags = []
             for version_tag in version_tags():
-                tags.append(f"{version_tag}-alpine")
-            tags.append("alpine")
+                tags.append(f"{version_tag}-alpine{version}-{rustup_profile}")
+            tags.append(f"alpine{version}-{rustup_profile}")
+            if version == default_alpine_version:
+                for version_tag in version_tags():
+                    tags.append(f"{version_tag}-alpine-{rustup_profile}")
+                tags.append(f"alpine-{rustup_profile}")
 
-        library += single_library(
-            tags,
-            ["amd64"],
-            os.path.join(rust_version, f"alpine{version}"))
+            library += single_library(
+                tags,
+                ["amd64"],
+                os.path.join(rust_version, f"alpine{version}-{rustup_profile}"))
 
     print(library)
 

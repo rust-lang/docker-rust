@@ -1,4 +1,4 @@
-FROM alpine:%%TAG%%
+FROM alpine:3.10
 
 RUN apk add --no-cache \
         ca-certificates \
@@ -7,14 +7,14 @@ RUN apk add --no-cache \
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=%%RUST-VERSION%%
+    RUST_VERSION=1.39.0
 
 RUN set -eux; \
-    url="https://static.rust-lang.org/rustup/archive/%%RUSTUP-VERSION%%/x86_64-unknown-linux-musl/rustup-init"; \
+    url="https://static.rust-lang.org/rustup/archive/1.20.2/x86_64-unknown-linux-musl/rustup-init"; \
     wget "$url"; \
-    echo "%%RUSTUP-SHA256%% *rustup-init" | sha256sum -c -; \
+    echo "44d689d8cf49165f059cafe10a5ce49708a26b0b0641169bc0e39ad9c54930d5 *rustup-init" | sha256sum -c -; \
     chmod +x rustup-init; \
-    ./rustup-init -y --no-modify-path --profile %%RUSTUP-PROFILE%% --default-toolchain $RUST_VERSION; \
+    ./rustup-init -y --no-modify-path --profile default --default-toolchain $RUST_VERSION; \
     rm rustup-init; \
     chmod -R a+w $RUSTUP_HOME $CARGO_HOME; \
     rustup --version; \
