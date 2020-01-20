@@ -27,6 +27,7 @@ default_debian_variant = "buster"
 
 alpine_versions = [
     "3.10",
+    "3.11",
 ]
 
 default_alpine_version = "3.10"
