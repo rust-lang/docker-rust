@@ -30,6 +30,7 @@ alpine_versions = [
     "3.11",
 ]
 
+# FIXME switch to 3.11 for 1.41.0
 default_alpine_version = "3.10"
 
 def rustup_hash(arch):
