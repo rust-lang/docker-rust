@@ -6,8 +6,8 @@ import os
 import subprocess
 import sys
 
-rust_version = "1.40.0"
-rustup_version = "1.20.2"
+rust_version = "1.41.0"
+rustup_version = "1.21.1"
 
 DebianArch = namedtuple("DebianArch", ["bashbrew", "dpkg", "rust"])
 
@@ -30,8 +30,7 @@ alpine_versions = [
     "3.11",
 ]
 
-# FIXME switch to 3.11 for 1.41.0
-default_alpine_version = "3.10"
+default_alpine_version = "3.11"
 
 def rustup_hash(arch):
     url = f"https://static.rust-lang.org/rustup/archive/{rustup_version}/{arch}/rustup-init.sha256"
