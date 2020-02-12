@@ -120,6 +120,9 @@ def update_travis():
         versions += f"  - VERSION={rust_version} VARIANT={variant}\n"
         versions += f"  - VERSION={rust_version} VARIANT={variant}/slim\n"
 
+    for variant in ubuntu_variants:
+        versions += f"  - VERSION={rust_version} VARIANT={variant}\n"
+
     for version in alpine_versions:
         versions += f"  - VERSION={rust_version} VARIANT=alpine{version}\n"
 
@@ -204,11 +207,6 @@ GitRepo: https://github.com/rust-lang-nursery/docker-rust.git
                 tags,
                 map(lambda a: a.bashbrew, debian_arches),
                 os.path.join(rust_version, variant))
-
-        library += single_library(
-                tags,
-                map(lambda a: a.bashbrew, debian_arches),
-                os.path.join(rust_version, variant, "slim"))
 
     for version in alpine_versions:
         tags = []
