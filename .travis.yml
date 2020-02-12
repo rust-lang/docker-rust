@@ -7,6 +7,7 @@ env:
   - VERSION=1.41.0 VARIANT=stretch/slim
   - VERSION=1.41.0 VARIANT=buster
   - VERSION=1.41.0 VARIANT=buster/slim
+  - VERSION=1.41.0 VARIANT=bionic
   - VERSION=1.41.0 VARIANT=alpine3.10
   - VERSION=1.41.0 VARIANT=alpine3.11
 #VERSIONS

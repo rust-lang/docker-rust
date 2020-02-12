@@ -25,6 +25,12 @@ debian_variants = [
 
 default_debian_variant = "buster"
 
+ubuntu_variants = [
+    "bionic"
+]
+
+default_ubuntu_variant = ubuntu_variants[0]
+
 alpine_versions = [
     "3.10",
     "3.11",
@@ -47,6 +53,25 @@ def write_file(file, contents):
         os.makedirs(dir)
     with open(file, "w") as f:
         f.write(contents)
+
+def update_ubuntu():
+    arch_case = 'dpkgArch="$(dpkg --print-architecture)"; \\\n'
+    arch_case += '    case "${dpkgArch##*-}" in \\\n'
+    for arch in debian_arches: # Ubuntu and debian arch are the same!
+        hash = rustup_hash(arch.rust)
+        arch_case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
+    arch_case += '        *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \\\n'
+    arch_case += '    esac'
+
+    template = read_file("Dockerfile-ubuntu.template")
+
+    for variant in ubuntu_variants:
+        rendered = template \
+            .replace("%%RUST-VERSION%%", rust_version) \
+            .replace("%%RUSTUP-VERSION%%", rustup_version) \
+            .replace("%%UBUNTU-SUITE%%", variant) \
+            .replace("%%ARCH-CASE%%", arch_case)
+        write_file(f"{rust_version}/{variant}/Dockerfile", rendered)
 
 def update_debian():
     arch_case = 'dpkgArch="$(dpkg --print-architecture)"; \\\n'
@@ -94,6 +119,9 @@ def update_travis():
     for variant in debian_variants:
         versions += f"  - VERSION={rust_version} VARIANT={variant}\n"
         versions += f"  - VERSION={rust_version} VARIANT={variant}/slim\n"
+
+    for variant in ubuntu_variants:
+        versions += f"  - VERSION={rust_version} VARIANT={variant}\n"
 
     for version in alpine_versions:
         versions += f"  - VERSION={rust_version} VARIANT=alpine{version}\n"
@@ -165,6 +193,21 @@ GitRepo: https://github.com/rust-lang-nursery/docker-rust.git
                 map(lambda a: a.bashbrew, debian_arches),
                 os.path.join(rust_version, variant, "slim"))
 
+    for variant in ubuntu_variants:
+        tags = []
+        for version_tag in version_tags():
+            tags.append(f"{version_tag}-{variant}")
+        tags.append(variant)
+        if variant == default_ubuntu_variant:
+            for version_tag in version_tags():
+                tags.append(version_tag)
+            tags.append("ubuntu")
+
+        library += single_library(
+                tags,
+                map(lambda a: a.bashbrew, debian_arches),
+                os.path.join(rust_version, variant))
+
     for version in alpine_versions:
         tags = []
         for version_tag in version_tags():
@@ -193,6 +236,7 @@ if __name__ == "__main__":
     task = sys.argv[1]
     if task == "update":
         update_debian()
+        update_ubuntu()
         update_alpine()
         update_travis()
     elif task == "generate-stackbrew-library":
