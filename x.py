@@ -26,11 +26,11 @@ debian_variants = [
 default_debian_variant = "buster"
 
 alpine_versions = [
-    "3.10",
     "3.11",
+    "3.12",
 ]
 
-default_alpine_version = "3.11"
+default_alpine_version = "3.12"
 
 def rustup_hash(arch):
     url = f"https://static.rust-lang.org/rustup/archive/{rustup_version}/{arch}/rustup-init.sha256"
