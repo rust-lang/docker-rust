@@ -3,12 +3,12 @@ services: docker
 
 env:
 #VERSIONS
-  - VERSION=1.44.0 VARIANT=stretch
-  - VERSION=1.44.0 VARIANT=stretch/slim
-  - VERSION=1.44.0 VARIANT=buster
-  - VERSION=1.44.0 VARIANT=buster/slim
-  - VERSION=1.44.0 VARIANT=alpine3.11
-  - VERSION=1.44.0 VARIANT=alpine3.12
+  - VERSION=1.44.1 VARIANT=stretch
+  - VERSION=1.44.1 VARIANT=stretch/slim
+  - VERSION=1.44.1 VARIANT=buster
+  - VERSION=1.44.1 VARIANT=buster/slim
+  - VERSION=1.44.1 VARIANT=alpine3.11
+  - VERSION=1.44.1 VARIANT=alpine3.12
 #VERSIONS
 
 install:

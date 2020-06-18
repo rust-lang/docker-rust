@@ -1,9 +1,9 @@
-FROM debian:buster-slim
+FROM debian:stretch-slim
 
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.44.0
+    RUST_VERSION=1.44.1
 
 RUN set -eux; \
     apt-get update; \
