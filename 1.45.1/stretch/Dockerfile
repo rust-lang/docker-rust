@@ -1,18 +1,11 @@
-FROM debian:stretch-slim
+FROM buildpack-deps:stretch
 
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.45.0
+    RUST_VERSION=1.45.1
 
 RUN set -eux; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends \
-        ca-certificates \
-        gcc \
-        libc6-dev \
-        wget \
-        ; \
     dpkgArch="$(dpkg --print-architecture)"; \
     case "${dpkgArch##*-}" in \
         amd64) rustArch='x86_64-unknown-linux-gnu'; rustupSha256='49c96f3f74be82f4752b8bffcf81961dea5e6e94ce1ccba94435f12e871c3bdb' ;; \
@@ -30,8 +23,4 @@ RUN set -eux; \
     chmod -R a+w $RUSTUP_HOME $CARGO_HOME; \
     rustup --version; \
     cargo --version; \
-    rustc --version; \
-    apt-get remove -y --auto-remove \
-        wget \
-        ; \
-    rm -rf /var/lib/apt/lists/*;
+    rustc --version;
