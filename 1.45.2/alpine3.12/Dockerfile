@@ -14,7 +14,7 @@ RUN set -eux; \
     wget "$url"; \
     echo "cee31c6f72b953c6293fd5d40142c7d61aa85db2a5ea81b3519fe1b492148dc9 *rustup-init" | sha256sum -c -; \
     chmod +x rustup-init; \
-    ./rustup-init -y --no-modify-path --profile minimal --default-toolchain $RUST_VERSION; \
+    ./rustup-init -y --no-modify-path --profile minimal --default-toolchain $RUST_VERSION --default-host x86_64-unknown-linux-musl; \
     rm rustup-init; \
     chmod -R a+w $RUSTUP_HOME $CARGO_HOME; \
     rustup --version; \
