@@ -8,13 +8,13 @@ ENV RUSTUP_HOME=/usr/local/rustup \
 RUN set -eux; \
     dpkgArch="$(dpkg --print-architecture)"; \
     case "${dpkgArch##*-}" in \
-        amd64) rustArch='x86_64-unknown-linux-gnu'; rustupSha256='49c96f3f74be82f4752b8bffcf81961dea5e6e94ce1ccba94435f12e871c3bdb' ;; \
-        armhf) rustArch='armv7-unknown-linux-gnueabihf'; rustupSha256='5a2be2919319e8778698fa9998002d1ec720efe7cb4f6ee4affb006b5e73f1be' ;; \
-        arm64) rustArch='aarch64-unknown-linux-gnu'; rustupSha256='d93ef6f91dab8299f46eef26a56c2d97c66271cea60bf004f2f088a86a697078' ;; \
-        i386) rustArch='i686-unknown-linux-gnu'; rustupSha256='e3d0ae3cfce5c6941f74fed61ca83e53d4cd2deb431b906cbd0687f246efede4' ;; \
+        amd64) rustArch='x86_64-unknown-linux-gnu'; rustupSha256='ee7ade44063c96c6a37012cc599cb560dce95205c86d17b247c726d2285b230c' ;; \
+        armhf) rustArch='armv7-unknown-linux-gnueabihf'; rustupSha256='afab10b89436bfb5ff7db4f4d5ad4d82faee98165915801d73e965e873661b1c' ;; \
+        arm64) rustArch='aarch64-unknown-linux-gnu'; rustupSha256='99f42ab89c790e8825d91c99edee22b0176f68969d42dc27a89a5d9651c3ceba' ;; \
+        i386) rustArch='i686-unknown-linux-gnu'; rustupSha256='6fefdd5c429545b9c710c5492402215e1256cb002f19840db64303281b5ded3c' ;; \
         *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \
     esac; \
-    url="https://static.rust-lang.org/rustup/archive/1.22.1/${rustArch}/rustup-init"; \
+    url="https://static.rust-lang.org/rustup/archive/1.23.0/${rustArch}/rustup-init"; \
     wget "$url"; \
     echo "${rustupSha256} *rustup-init" | sha256sum -c -; \
     chmod +x rustup-init; \
