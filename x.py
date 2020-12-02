@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 rust_version = "1.48.0"
-rustup_version = "1.22.1"
+rustup_version = "1.23.0"
 
 DebianArch = namedtuple("DebianArch", ["bashbrew", "dpkg", "rust"])
 
@@ -23,6 +23,13 @@ debian_variants = [
 ]
 
 default_debian_variant = "buster"
+
+AlpineArch = namedtuple("AlpineArch", ["bashbrew", "apk", "rust"])
+
+alpine_arches = [
+    AlpineArch("amd64", "x86_64", "x86_64-unknown-linux-musl"),
+    AlpineArch("arm64v8", "aarch64", "aarch64-unknown-linux-musl"),
+]
 
 alpine_versions = [
     "3.11",
@@ -75,6 +82,14 @@ def update_debian():
         write_file(f"{rust_version}/{variant}/slim/Dockerfile", rendered)
 
 def update_alpine():
+    arch_case = 'apkArch="$(apk --print-arch)"; \\\n'
+    arch_case += '    case "$apkArch" in \\\n'
+    for arch in alpine_arches:
+        hash = rustup_hash(arch.rust)
+        arch_case += f"        {arch.apk}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
+    arch_case += '        *) echo >&2 "unsupported architecture: $apkArch"; exit 1 ;; \\\n'
+    arch_case += '    esac'
+
     template = read_file("Dockerfile-alpine.template")
 
     for version in alpine_versions:
@@ -82,7 +97,7 @@ def update_alpine():
             .replace("%%RUST-VERSION%%", rust_version) \
             .replace("%%RUSTUP-VERSION%%", rustup_version) \
             .replace("%%TAG%%", version) \
-            .replace("%%RUSTUP-SHA256%%", rustup_hash("x86_64-unknown-linux-musl"))
+            .replace("%%ARCH-CASE%%", arch_case)
         write_file(f"{rust_version}/alpine{version}/Dockerfile", rendered)
 
 def update_travis():
@@ -176,7 +191,7 @@ GitRepo: https://github.com/rust-lang-nursery/docker-rust.git
 
         library += single_library(
             tags,
-            ["amd64"],
+            map(lambda a: a.bashbrew, alpine_arches),
             os.path.join(rust_version, f"alpine{version}"))
 
     print(library)
