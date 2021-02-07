@@ -38,8 +38,22 @@ alpine_versions = [
 
 default_alpine_version = "3.13"
 
+# (Windows Server tag, Windows SDK build number)
+# The build number is specifically used to select the right Windows 10 SDK to
+# install from the Visual Studio Build Tools installer. See
+# https://docs.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2019#c-build-tools
+# for the build version numbers.
+windows_servercore_versions = [
+    ("1809", "17763"),
+]
+
 def rustup_hash(arch):
     url = f"https://static.rust-lang.org/rustup/archive/{rustup_version}/{arch}/rustup-init.sha256"
+    with request.urlopen(url) as f:
+        return f.read().decode('utf-8').split()[0]
+
+def rustup_hash_windows(arch):
+    url = f"https://static.rust-lang.org/rustup/archive/{rustup_version}/{arch}/rustup-init.exe.sha256"
     with request.urlopen(url) as f:
         return f.read().decode('utf-8').split()[0]
 
@@ -99,6 +113,17 @@ def update_alpine():
             .replace("%%TAG%%", version) \
             .replace("%%ARCH-CASE%%", arch_case)
         write_file(f"{rust_version}/alpine{version}/Dockerfile", rendered)
+
+def update_windows():
+    template = read_file("Dockerfile-windows-msvc.template")
+    for version, build in windows_servercore_versions:
+        rendered = template \
+            .replace("%%RUST-VERSION%%", rust_version) \
+            .replace("%%RUSTUP-VERSION%%", rustup_version) \
+            .replace("%%WINDOWS-VERSION%%", version) \
+            .replace("%%SDK-BUILD%%", build) \
+            .replace("%%RUSTUP-SHA256%%", rustup_hash_windows("x86_64-pc-windows-msvc"))
+        write_file(f"{rust_version}/windowsservercore-{version}/msvc/Dockerfile", rendered)
 
 def update_travis():
     file = ".travis.yml"
@@ -209,6 +234,7 @@ if __name__ == "__main__":
         update_debian()
         update_alpine()
         update_travis()
+        update_windows()
     elif task == "generate-stackbrew-library":
         generate_stackbrew_library()
     else:
