@@ -1,0 +1,51 @@
+name: Build Docker Images
+
+on: [push, pull_request]
+
+jobs:
+  build-images:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        include:
+#VERSIONS
+          - variant: buster
+            os: ubuntu-18.04
+            version: 1.50.0
+          - variant: buster/slim
+            os: ubuntu-18.04
+            version: 1.50.0
+          - variant: alpine3.12
+            os: ubuntu-18.04
+            version: 1.50.0
+          - variant: alpine3.13
+            os: ubuntu-18.04
+            version: 1.50.0
+          - variant: windowsservercore-1809/msvc
+            os: windows-2019
+            version: 1.50.0
+#VERSIONS
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+      - name: Check out Docker official images repo
+        uses: actions/checkout@v2
+        with:
+          repository: docker-library/official-images
+          path: official-images
+      - name: Build and test docker image
+        shell: bash
+        env:
+          VERSION: ${{ matrix.version }}
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          env | sort
+          cd "${VERSION}/${VARIANT}"
+          slash='/'; image="rust:${VERSION}-${VARIANT//$slash/-}"
+          docker build -t "$image" .
+          ${GITHUB_WORKSPACE}/official-images/test/run.sh "$image"
+          docker images

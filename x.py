@@ -125,17 +125,30 @@ def update_windows():
             .replace("%%RUSTUP-SHA256%%", rustup_hash_windows("x86_64-pc-windows-msvc"))
         write_file(f"{rust_version}/windowsservercore-{version}/msvc/Dockerfile", rendered)
 
-def update_travis():
-    file = ".travis.yml"
+def update_github_actions():
+    file = ".github/workflows/build-images.yml"
     config = read_file(file)
 
     versions = ""
     for variant in debian_variants:
-        versions += f"  - VERSION={rust_version} VARIANT={variant}\n"
-        versions += f"  - VERSION={rust_version} VARIANT={variant}/slim\n"
+        versions += f"          - variant: {variant}\n"
+        versions += f"            os: ubuntu-18.04\n"
+        versions += f"            version: {rust_version}\n"
+
+        versions += f"          - variant: {variant}/slim\n"
+        versions += f"            os: ubuntu-18.04\n"
+        versions += f"            version: {rust_version}\n"
 
     for version in alpine_versions:
-        versions += f"  - VERSION={rust_version} VARIANT=alpine{version}\n"
+        versions += f"          - variant: alpine{version}\n"
+        versions += f"            os: ubuntu-18.04\n"
+        versions += f"            version: {rust_version}\n"
+
+    for version, build in windows_servercore_versions:
+        versions += f"          - variant: windowsservercore-{version}/msvc\n"
+        versions += f"            os: windows-2019\n"
+        versions += f"            version: {rust_version}\n"
+
 
     marker = "#VERSIONS\n"
     split = config.split(marker)
@@ -233,8 +246,8 @@ if __name__ == "__main__":
     if task == "update":
         update_debian()
         update_alpine()
-        update_travis()
         update_windows()
+        update_github_actions()
     elif task == "generate-stackbrew-library":
         generate_stackbrew_library()
     else:
