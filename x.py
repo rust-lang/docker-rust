@@ -125,6 +125,15 @@ def update_windows():
             .replace("%%RUSTUP-SHA256%%", rustup_hash_windows("x86_64-pc-windows-msvc"))
         write_file(f"{rust_version}/windowsservercore-{version}/msvc/Dockerfile", rendered)
 
+    template = read_file("Dockerfile-windows-gnu.template")
+    for version, build in windows_servercore_versions:
+        rendered = template \
+            .replace("%%RUST-VERSION%%", rust_version) \
+            .replace("%%RUSTUP-VERSION%%", rustup_version) \
+            .replace("%%WINDOWS-VERSION%%", version) \
+            .replace("%%RUSTUP-SHA256%%", rustup_hash_windows("x86_64-pc-windows-msvc"))
+        write_file(f"{rust_version}/windowsservercore-{version}/gnu/Dockerfile", rendered)
+
 def update_github_actions():
     file = ".github/workflows/build-images.yml"
     config = read_file(file)
@@ -146,6 +155,11 @@ def update_github_actions():
 
     for version, build in windows_servercore_versions:
         versions += f"          - variant: windowsservercore-{version}/msvc\n"
+        versions += f"            os: windows-2019\n"
+        versions += f"            version: {rust_version}\n"
+
+    for version, build in windows_servercore_versions:
+        versions += f"          - variant: windowsservercore-{version}/gnu\n"
         versions += f"            os: windows-2019\n"
         versions += f"            version: {rust_version}\n"
 
@@ -231,6 +245,17 @@ GitRepo: https://github.com/rust-lang-nursery/docker-rust.git
             tags,
             map(lambda a: a.bashbrew, alpine_arches),
             os.path.join(rust_version, f"alpine{version}"))
+
+    for version, build in windows_servercore_versions:
+        tags = []
+        for version_tag in version_tags():
+            tags.append(f"{version_tag}-windowsservercore-{version}-gnu")
+        tags.append(f"windowsservercore-{version}-gnu")
+
+        library += single_library(
+            tags,
+            ["x86_64"],
+            os.path.join(rust_version, f"windowsservercore-{version}", "gnu"))
 
     print(library)
 
