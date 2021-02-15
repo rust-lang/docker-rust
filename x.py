@@ -38,8 +38,22 @@ alpine_versions = [
 
 default_alpine_version = "3.13"
 
+# (Windows Server tag, Windows SDK build number)
+# The build number is specifically used to select the right Windows 10 SDK to
+# install from the Visual Studio Build Tools installer. See
+# https://docs.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2019#c-build-tools
+# for the build version numbers.
+windows_servercore_versions = [
+    ("1809", "17763"),
+]
+
 def rustup_hash(arch):
     url = f"https://static.rust-lang.org/rustup/archive/{rustup_version}/{arch}/rustup-init.sha256"
+    with request.urlopen(url) as f:
+        return f.read().decode('utf-8').split()[0]
+
+def rustup_hash_windows(arch):
+    url = f"https://static.rust-lang.org/rustup/archive/{rustup_version}/{arch}/rustup-init.exe.sha256"
     with request.urlopen(url) as f:
         return f.read().decode('utf-8').split()[0]
 
@@ -100,17 +114,55 @@ def update_alpine():
             .replace("%%ARCH-CASE%%", arch_case)
         write_file(f"{rust_version}/alpine{version}/Dockerfile", rendered)
 
-def update_travis():
-    file = ".travis.yml"
+def update_windows():
+    template = read_file("Dockerfile-windows-msvc.template")
+    for version, build in windows_servercore_versions:
+        rendered = template \
+            .replace("%%RUST-VERSION%%", rust_version) \
+            .replace("%%RUSTUP-VERSION%%", rustup_version) \
+            .replace("%%WINDOWS-VERSION%%", version) \
+            .replace("%%SDK-BUILD%%", build) \
+            .replace("%%RUSTUP-SHA256%%", rustup_hash_windows("x86_64-pc-windows-msvc"))
+        write_file(f"{rust_version}/windowsservercore-{version}/msvc/Dockerfile", rendered)
+
+    template = read_file("Dockerfile-windows-gnu.template")
+    for version, build in windows_servercore_versions:
+        rendered = template \
+            .replace("%%RUST-VERSION%%", rust_version) \
+            .replace("%%RUSTUP-VERSION%%", rustup_version) \
+            .replace("%%WINDOWS-VERSION%%", version) \
+            .replace("%%RUSTUP-SHA256%%", rustup_hash_windows("x86_64-pc-windows-msvc"))
+        write_file(f"{rust_version}/windowsservercore-{version}/gnu/Dockerfile", rendered)
+
+def update_github_actions():
+    file = ".github/workflows/build-images.yml"
     config = read_file(file)
 
     versions = ""
     for variant in debian_variants:
-        versions += f"  - VERSION={rust_version} VARIANT={variant}\n"
-        versions += f"  - VERSION={rust_version} VARIANT={variant}/slim\n"
+        versions += f"          - variant: {variant}\n"
+        versions += f"            os: ubuntu-18.04\n"
+        versions += f"            version: {rust_version}\n"
+
+        versions += f"          - variant: {variant}/slim\n"
+        versions += f"            os: ubuntu-18.04\n"
+        versions += f"            version: {rust_version}\n"
 
     for version in alpine_versions:
-        versions += f"  - VERSION={rust_version} VARIANT=alpine{version}\n"
+        versions += f"          - variant: alpine{version}\n"
+        versions += f"            os: ubuntu-18.04\n"
+        versions += f"            version: {rust_version}\n"
+
+    for version, build in windows_servercore_versions:
+        versions += f"          - variant: windowsservercore-{version}/msvc\n"
+        versions += f"            os: windows-2019\n"
+        versions += f"            version: {rust_version}\n"
+
+    for version, build in windows_servercore_versions:
+        versions += f"          - variant: windowsservercore-{version}/gnu\n"
+        versions += f"            os: windows-2019\n"
+        versions += f"            version: {rust_version}\n"
+
 
     marker = "#VERSIONS\n"
     split = config.split(marker)
@@ -194,6 +246,17 @@ GitRepo: https://github.com/rust-lang-nursery/docker-rust.git
             map(lambda a: a.bashbrew, alpine_arches),
             os.path.join(rust_version, f"alpine{version}"))
 
+    for version, build in windows_servercore_versions:
+        tags = []
+        for version_tag in version_tags():
+            tags.append(f"{version_tag}-windowsservercore-{version}-gnu")
+        tags.append(f"windowsservercore-{version}-gnu")
+
+        library += single_library(
+            tags,
+            ["x86_64"],
+            os.path.join(rust_version, f"windowsservercore-{version}", "gnu"))
+
     print(library)
 
 def usage():
@@ -208,7 +271,8 @@ if __name__ == "__main__":
     if task == "update":
         update_debian()
         update_alpine()
-        update_travis()
+        update_windows()
+        update_github_actions()
     elif task == "generate-stackbrew-library":
         generate_stackbrew_library()
     else:
