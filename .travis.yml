@@ -3,6 +3,8 @@ services: docker
 
 env:
 #VERSIONS
+  - VERSION=1.51.0 VARIANT=bullseye
+  - VERSION=1.51.0 VARIANT=bullseye/slim
   - VERSION=1.51.0 VARIANT=buster
   - VERSION=1.51.0 VARIANT=buster/slim
   - VERSION=1.51.0 VARIANT=alpine3.12
