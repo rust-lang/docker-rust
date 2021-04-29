@@ -1,9 +1,16 @@
 FROM debian:%%DEBIAN-SUITE%%-slim
 
+
+USER root
+
+
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
     RUST_VERSION=%%RUST-VERSION%%
+
+export USER=root
+
 
 RUN set -eux; \
     apt-get update; \

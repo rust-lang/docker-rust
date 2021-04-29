@@ -1,5 +1,6 @@
 FROM alpine:%%TAG%%
 
+
 RUN apk add --no-cache \
         ca-certificates \
         gcc
@@ -8,6 +9,8 @@ ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
     RUST_VERSION=%%RUST-VERSION%%
+
+export USER=root
 
 RUN set -eux; \
     %%ARCH-CASE%%; \
