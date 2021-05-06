@@ -1,4 +1,4 @@
-FROM alpine:3.13
+FROM alpine:3.12
 
 RUN apk add --no-cache \
         ca-certificates \
@@ -7,16 +7,16 @@ RUN apk add --no-cache \
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.51.0
+    RUST_VERSION=1.52.0
 
 RUN set -eux; \
     apkArch="$(apk --print-arch)"; \
     case "$apkArch" in \
-        x86_64) rustArch='x86_64-unknown-linux-musl'; rustupSha256='05c5c05ec76671d73645aac3afbccf2187352fce7e46fc85be859f52a42797f6' ;; \
-        aarch64) rustArch='aarch64-unknown-linux-musl'; rustupSha256='6a8a480d8d9e7f8c6979d7f8b12bc59da13db67970f7b13161ff409f0a771213' ;; \
+        x86_64) rustArch='x86_64-unknown-linux-musl'; rustupSha256='92e38262ebb9440fbdd229618eb85489d2c3d4a74c68b9ef0fdaf200e19521f8' ;; \
+        aarch64) rustArch='aarch64-unknown-linux-musl'; rustupSha256='4da6988d6bc80de3fa2d239f7de44152c87c257d208562ad9da17065cc08289b' ;; \
         *) echo >&2 "unsupported architecture: $apkArch"; exit 1 ;; \
     esac; \
-    url="https://static.rust-lang.org/rustup/archive/1.23.1/${rustArch}/rustup-init"; \
+    url="https://static.rust-lang.org/rustup/archive/1.24.1/${rustArch}/rustup-init"; \
     wget "$url"; \
     echo "${rustupSha256} *rustup-init" | sha256sum -c -; \
     chmod +x rustup-init; \
