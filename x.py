@@ -33,7 +33,6 @@ alpine_arches = [
 ]
 
 alpine_versions = [
-    "3.13",
     "3.14",
     "3.15",
 ]
