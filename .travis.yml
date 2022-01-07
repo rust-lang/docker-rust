@@ -7,8 +7,8 @@ env:
   - VERSION=1.57.0 VARIANT=buster/slim
   - VERSION=1.57.0 VARIANT=bullseye
   - VERSION=1.57.0 VARIANT=bullseye/slim
-  - VERSION=1.57.0 VARIANT=alpine3.13
   - VERSION=1.57.0 VARIANT=alpine3.14
+  - VERSION=1.57.0 VARIANT=alpine3.15
 #VERSIONS
 
 install:
