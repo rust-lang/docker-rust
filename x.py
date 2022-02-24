@@ -145,10 +145,10 @@ def generate_stackbrew_library():
     commit = file_commit("x.py")
 
     library = f"""\
-# this file is generated via https://github.com/rust-lang-nursery/docker-rust/blob/{commit}/x.py
+# this file is generated via https://github.com/rust-lang/docker-rust/blob/{commit}/x.py
 
 Maintainers: Steven Fackler <sfackler@gmail.com> (@sfackler)
-GitRepo: https://github.com/rust-lang-nursery/docker-rust.git
+GitRepo: https://github.com/rust-lang/docker-rust.git
 """
 
     for variant in debian_variants:
