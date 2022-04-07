@@ -3,12 +3,12 @@ services: docker
 
 env:
 #VERSIONS
-  - VERSION=1.59.0 VARIANT=buster
-  - VERSION=1.59.0 VARIANT=buster/slim
-  - VERSION=1.59.0 VARIANT=bullseye
-  - VERSION=1.59.0 VARIANT=bullseye/slim
-  - VERSION=1.59.0 VARIANT=alpine3.14
-  - VERSION=1.59.0 VARIANT=alpine3.15
+  - VERSION=1.60.0 VARIANT=buster
+  - VERSION=1.60.0 VARIANT=buster/slim
+  - VERSION=1.60.0 VARIANT=bullseye
+  - VERSION=1.60.0 VARIANT=bullseye/slim
+  - VERSION=1.60.0 VARIANT=alpine3.14
+  - VERSION=1.60.0 VARIANT=alpine3.15
 #VERSIONS
 
 install:
