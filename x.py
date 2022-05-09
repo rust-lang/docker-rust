@@ -16,6 +16,7 @@ debian_arches = [
     DebianArch("arm32v7", "armhf", "armv7-unknown-linux-gnueabihf"),
     DebianArch("arm64v8", "arm64", "aarch64-unknown-linux-gnu"),
     DebianArch("i386", "i386", "i686-unknown-linux-gnu"),
+    DebianArch("ppc64le", "ppc64el", "powerpc64le-unknown-linux-gnu"),
 ]
 
 debian_variants = [
