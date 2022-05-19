@@ -1,4 +1,4 @@
-FROM alpine:3.14
+FROM alpine:3.15
 
 RUN apk add --no-cache \
         ca-certificates \
@@ -7,7 +7,7 @@ RUN apk add --no-cache \
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.60.0
+    RUST_VERSION=1.61.0
 
 RUN set -eux; \
     apkArch="$(apk --print-arch)"; \
