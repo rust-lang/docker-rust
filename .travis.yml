@@ -9,6 +9,7 @@ env:
   - VERSION=1.63.0 VARIANT=bullseye/slim
   - VERSION=1.63.0 VARIANT=alpine3.15
   - VERSION=1.63.0 VARIANT=alpine3.16
+  - VERSION=1.63.0 VARIANT=alpineedge
 #VERSIONS
 
 install:

@@ -35,6 +35,7 @@ alpine_arches = [
 alpine_versions = [
     "3.15",
     "3.16",
+    "edge",
 ]
 
 default_alpine_version = "3.16"
