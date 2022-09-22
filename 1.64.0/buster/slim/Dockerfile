@@ -1,9 +1,9 @@
-FROM debian:bullseye-slim
+FROM debian:buster-slim
 
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.63.0
+    RUST_VERSION=1.64.0
 
 RUN set -eux; \
     apt-get update; \
