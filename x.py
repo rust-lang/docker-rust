@@ -66,6 +66,7 @@ def update_debian():
 
     template = read_file("Dockerfile-debian.template")
     slim_template = read_file("Dockerfile-slim.template")
+    tools_template = read_file("Dockerfile-tools.template")
 
     for variant in debian_variants:
         rendered = template \
@@ -82,6 +83,10 @@ def update_debian():
             .replace("%%ARCH-CASE%%", arch_case)
         write_file(f"{rust_version}/{variant}/slim/Dockerfile", rendered)
 
+        rendered = tools_template \
+            .replace("%%RUST-IMAGE%%", f"{rust_version}-{variant}")
+        write_file(f"{rust_version}/{variant}/tools/Dockerfile", rendered)
+
 def update_alpine():
     arch_case = 'apkArch="$(apk --print-arch)"; \\\n'
     arch_case += '    case "$apkArch" in \\\n'
@@ -92,6 +97,7 @@ def update_alpine():
     arch_case += '    esac'
 
     template = read_file("Dockerfile-alpine.template")
+    tools_template = read_file("Dockerfile-tools.template")
 
     for version in alpine_versions:
         rendered = template \
@@ -101,6 +107,11 @@ def update_alpine():
             .replace("%%ARCH-CASE%%", arch_case)
         write_file(f"{rust_version}/alpine{version}/Dockerfile", rendered)
 
+        rendered = tools_template \
+            .replace("%%RUST-IMAGE%%", f"{rust_version}-alpine{version}")
+        write_file(f"{rust_version}/alpine{version}/tools/Dockerfile", rendered)
+
+
 def update_travis():
     file = ".travis.yml"
     config = read_file(file)
@@ -108,10 +119,13 @@ def update_travis():
     versions = ""
     for variant in debian_variants:
         versions += f"  - VERSION={rust_version} VARIANT={variant}\n"
+        versions += f"  - VERSION={rust_version} VARIANT={variant}/tools\n"
         versions += f"  - VERSION={rust_version} VARIANT={variant}/slim\n"
 
     for version in alpine_versions:
         versions += f"  - VERSION={rust_version} VARIANT=alpine{version}\n"
+        versions += f"  - VERSION={rust_version} VARIANT=alpine{version}/tools\n"
+        versions += f"  - VERSION={rust_version} VARIANT={variant}/slim\n"
 
     marker = "#VERSIONS\n"
     split = config.split(marker)
@@ -152,6 +166,7 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
 """
 
     for variant in debian_variants:
+        # Base tags 
         tags = []
         for version_tag in version_tags():
             tags.append(f"{version_tag}-{variant}")
@@ -165,7 +180,8 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
                 tags,
                 map(lambda a: a.bashbrew, debian_arches),
                 os.path.join(rust_version, variant))
-
+        
+        # Slim tags 
         tags = []
         for version_tag in version_tags():
             tags.append(f"{version_tag}-slim-{variant}")
@@ -180,7 +196,23 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
                 map(lambda a: a.bashbrew, debian_arches),
                 os.path.join(rust_version, variant, "slim"))
 
+        # Tools tags
+        tags = []
+        for version_tag in version_tags():
+            tags.append(f"{version_tag}-tools-{variant}")
+        tags.append(f"tools-{variant}")
+        if variant == default_debian_variant:
+            for version_tag in version_tags():
+                tags.append(f"{version_tag}-tools")
+            tags.append("tools")
+
+        library += single_library(
+                tags,
+                map(lambda a: a.bashbrew, debian_arches),
+                os.path.join(rust_version, variant, "tools"))
+
     for version in alpine_versions:
+        # Base tags 
         tags = []
         for version_tag in version_tags():
             tags.append(f"{version_tag}-alpine{version}")
@@ -194,6 +226,21 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
             tags,
             map(lambda a: a.bashbrew, alpine_arches),
             os.path.join(rust_version, f"alpine{version}"))
+
+        # Tools tags
+        tags = []
+        for version_tag in version_tags():
+            tags.append(f"{version_tag}-tools-alpine{version}")
+        tags.append(f"tools-alpine{version}")
+        if version == default_alpine_version:
+            for version_tag in version_tags():
+                tags.append(f"{version_tag}-tools-alpine")
+            tags.append("tools-alpine")
+
+        library += single_library(
+            tags,
+            map(lambda a: a.bashbrew, alpine_arches),
+            os.path.join(rust_version, f"tools-alpine{version}"))
 
     print(library)
 
