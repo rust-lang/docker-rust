@@ -20,7 +20,8 @@ debian_arches = [
 
 debian_variants = [
     "buster",
-    "bullseye"
+    "bullseye",
+    "bookworm"
 ]
 
 default_debian_variant = "bullseye"
