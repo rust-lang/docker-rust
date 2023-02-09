@@ -6,7 +6,7 @@ import os
 import subprocess
 import sys
 
-rust_version = "1.67.0"
+rust_version = "1.67.1"
 rustup_version = "1.25.2"
 
 DebianArch = namedtuple("DebianArch", ["bashbrew", "dpkg", "rust"])
