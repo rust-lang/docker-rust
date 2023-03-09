@@ -3,14 +3,14 @@ services: docker
 
 env:
 #VERSIONS
-  - VERSION=1.67.1 VARIANT=buster
-  - VERSION=1.67.1 VARIANT=buster/slim
-  - VERSION=1.67.1 VARIANT=bullseye
-  - VERSION=1.67.1 VARIANT=bullseye/slim
-  - VERSION=1.67.1 VARIANT=bookworm
-  - VERSION=1.67.1 VARIANT=bookworm/slim
-  - VERSION=1.67.1 VARIANT=alpine3.16
-  - VERSION=1.67.1 VARIANT=alpine3.17
+  - VERSION=1.68.0 VARIANT=buster
+  - VERSION=1.68.0 VARIANT=buster/slim
+  - VERSION=1.68.0 VARIANT=bullseye
+  - VERSION=1.68.0 VARIANT=bullseye/slim
+  - VERSION=1.68.0 VARIANT=bookworm
+  - VERSION=1.68.0 VARIANT=bookworm/slim
+  - VERSION=1.68.0 VARIANT=alpine3.16
+  - VERSION=1.68.0 VARIANT=alpine3.17
 #VERSIONS
 
 install:
