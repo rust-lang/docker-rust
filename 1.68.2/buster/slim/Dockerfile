@@ -3,7 +3,7 @@ FROM debian:buster-slim
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.68.1
+    RUST_VERSION=1.68.2
 
 RUN set -eux; \
     apt-get update; \
