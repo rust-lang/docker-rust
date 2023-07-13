@@ -1,9 +1,9 @@
-FROM buildpack-deps:buster
+FROM buildpack-deps:bookworm
 
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.70.0
+    RUST_VERSION=1.71.0
 
 RUN set -eux; \
     dpkgArch="$(dpkg --print-architecture)"; \
