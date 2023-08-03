@@ -21,10 +21,11 @@ debian_arches = [
 debian_variants = [
     "buster",
     "bullseye",
-    "bookworm"
+    "bookworm",
+    "trixie",
 ]
 
-default_debian_variant = "bullseye"
+default_debian_variant = "bookworm"
 
 AlpineArch = namedtuple("AlpineArch", ["bashbrew", "apk", "rust"])
 
