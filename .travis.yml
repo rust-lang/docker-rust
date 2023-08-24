@@ -9,8 +9,6 @@ env:
   - VERSION=1.72.0 VARIANT=bullseye/slim
   - VERSION=1.72.0 VARIANT=bookworm
   - VERSION=1.72.0 VARIANT=bookworm/slim
-  - VERSION=1.72.0 VARIANT=trixie
-  - VERSION=1.72.0 VARIANT=trixie/slim
   - VERSION=1.72.0 VARIANT=alpine3.17
   - VERSION=1.72.0 VARIANT=alpine3.18
 #VERSIONS

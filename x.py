@@ -22,7 +22,6 @@ debian_variants = [
     "buster",
     "bullseye",
     "bookworm",
-    "trixie",
 ]
 
 default_debian_variant = "bookworm"
