@@ -11,11 +11,15 @@ rustup_version = "1.26.0"
 
 DebianArch = namedtuple("DebianArch", ["bashbrew", "dpkg", "rust"])
 
-debian_arches = [
+debian_buster_arches = [
     DebianArch("amd64", "amd64", "x86_64-unknown-linux-gnu"),
     DebianArch("arm32v7", "armhf", "armv7-unknown-linux-gnueabihf"),
     DebianArch("arm64v8", "arm64", "aarch64-unknown-linux-gnu"),
     DebianArch("i386", "i386", "i686-unknown-linux-gnu"),
+]
+
+debian_other_arches = [
+    DebianArch("ppc64le", "ppc64el", "powerpc64le-unknown-linux-gnu"),
 ]
 
 debian_variants = [
@@ -57,30 +61,42 @@ def write_file(file, contents):
         f.write(contents)
 
 def update_debian():
-    arch_case = 'dpkgArch="$(dpkg --print-architecture)"; \\\n'
-    arch_case += '    case "${dpkgArch##*-}" in \\\n'
-    for arch in debian_arches:
+    buster_arch_case = 'dpkgArch="$(dpkg --print-architecture)"; \\\n'
+    buster_arch_case += '    case "${dpkgArch##*-}" in \\\n'
+    for arch in debian_buster_arches:
         hash = rustup_hash(arch.rust)
-        arch_case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
-    arch_case += '        *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \\\n'
-    arch_case += '    esac'
+        buster_arch_case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
+
+    debian_arch_case = buster_arch_case
+    for arch in debian_other_arches:
+        hash = rustup_hash(arch.rust)
+        debian_arch_case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
+
+    end_case = '        *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \\\n'
+    end_case += '    esac'
+
+    debian_arch_case += end_case
+    buster_arch_case += end_case
 
     template = read_file("Dockerfile-debian.template")
     slim_template = read_file("Dockerfile-slim.template")
 
     for variant in debian_variants:
+        case = debian_arch_case
+        if variant == "buster":
+            case = buster_arch_case
         rendered = template \
             .replace("%%RUST-VERSION%%", rust_version) \
             .replace("%%RUSTUP-VERSION%%", rustup_version) \
             .replace("%%DEBIAN-SUITE%%", variant) \
-            .replace("%%ARCH-CASE%%", arch_case)
+            .replace("%%ARCH-CASE%%", case)
         write_file(f"{rust_version}/{variant}/Dockerfile", rendered)
 
         rendered = slim_template \
             .replace("%%RUST-VERSION%%", rust_version) \
             .replace("%%RUSTUP-VERSION%%", rustup_version) \
             .replace("%%DEBIAN-SUITE%%", variant) \
-            .replace("%%ARCH-CASE%%", arch_case)
+            .replace("%%ARCH-CASE%%", case)
         write_file(f"{rust_version}/{variant}/slim/Dockerfile", rendered)
 
 def update_alpine():
