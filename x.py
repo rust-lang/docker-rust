@@ -34,11 +34,11 @@ alpine_arches = [
 ]
 
 alpine_versions = [
-    "3.17",
     "3.18",
+    "3.19",
 ]
 
-default_alpine_version = "3.18"
+default_alpine_version = "3.19"
 
 def rustup_hash(arch):
     url = f"https://static.rust-lang.org/rustup/archive/{rustup_version}/{arch}/rustup-init.sha256"

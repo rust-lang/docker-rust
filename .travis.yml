@@ -9,8 +9,8 @@ env:
   - VERSION=1.74.1 VARIANT=bullseye/slim
   - VERSION=1.74.1 VARIANT=bookworm
   - VERSION=1.74.1 VARIANT=bookworm/slim
-  - VERSION=1.74.1 VARIANT=alpine3.17
   - VERSION=1.74.1 VARIANT=alpine3.18
+  - VERSION=1.74.1 VARIANT=alpine3.19
 #VERSIONS
 
 install:
