@@ -119,6 +119,30 @@ def update_travis():
     rendered = split[0] + marker + versions + marker + split[2]
     write_file(file, rendered)
 
+def update_ci():
+    file = ".github/workflows/ci.yml"
+    config = read_file(file)
+
+    marker = "#RUST_VERSION\n"
+    split = config.split(marker)
+    rendered = split[0] + marker + f"      RUST_VERSION: {rust_version}\n" + marker + split[2]
+
+    versions = ""
+    for variant in debian_variants:
+        versions += f"          - name: {variant}\n"
+        versions += f"            variant: {variant}\n"
+        versions += f"          - name: slim-{variant}\n"
+        versions += f"            variant: {variant}/slim\n"
+
+    for version in alpine_versions:
+        versions += f"          - name: alpine{version}\n"
+        versions += f"            variant: alpine{version}\n"
+
+    marker = "#VERSIONS\n"
+    split = rendered.split(marker)
+    rendered = split[0] + marker + versions + marker + split[2]
+    write_file(file, rendered)
+
 def file_commit(file):
     return subprocess.run(
             ["git", "log", "-1", "--format=%H", "HEAD", "--", file],
@@ -212,6 +236,7 @@ if __name__ == "__main__":
         update_debian()
         update_alpine()
         update_travis()
+        update_ci()
     elif task == "generate-stackbrew-library":
         generate_stackbrew_library()
     else:
