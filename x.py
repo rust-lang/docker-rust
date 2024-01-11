@@ -61,30 +61,27 @@ def write_file(file, contents):
         f.write(contents)
 
 def update_debian():
-    buster_arch_case = 'dpkgArch="$(dpkg --print-architecture)"; \\\n'
-    buster_arch_case += '    case "${dpkgArch##*-}" in \\\n'
-    for arch in debian_buster_arches:
+    arch_case = 'dpkgArch="$(dpkg --print-architecture)"; \\\n'
+    arch_case += '    case "${dpkgArch##*-}" in \\\n'
+    for arch in debian_arches:
         hash = rustup_hash(arch.rust)
-        buster_arch_case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
+        arch_case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
 
-    debian_arch_case = buster_arch_case
-    for arch in debian_other_arches:
-        hash = rustup_hash(arch.rust)
-        debian_arch_case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
-
-    end_case = '        *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \\\n'
-    end_case += '    esac'
-
-    debian_arch_case += end_case
-    buster_arch_case += end_case
+    end = '        *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \\\n'
+    end += '    esac'
 
     template = read_file("Dockerfile-debian.template")
     slim_template = read_file("Dockerfile-slim.template")
 
     for variant in debian_variants:
-        case = debian_arch_case
-        if variant == "buster":
-            case = buster_arch_case
+        case = arch_case
+        if variant != "buster":
+            for arch in debian_non_buster_arches:
+                hash = rustup_hash(arch.rust)
+                case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
+
+        case += end
+
         rendered = template \
             .replace("%%RUST-VERSION%%", rust_version) \
             .replace("%%RUSTUP-VERSION%%", rustup_version) \
