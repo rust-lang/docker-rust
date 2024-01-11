@@ -11,14 +11,14 @@ rustup_version = "1.26.0"
 
 DebianArch = namedtuple("DebianArch", ["bashbrew", "dpkg", "rust"])
 
-debian_buster_arches = [
+debian_arches = [
     DebianArch("amd64", "amd64", "x86_64-unknown-linux-gnu"),
     DebianArch("arm32v7", "armhf", "armv7-unknown-linux-gnueabihf"),
     DebianArch("arm64v8", "arm64", "aarch64-unknown-linux-gnu"),
     DebianArch("i386", "i386", "i686-unknown-linux-gnu"),
 ]
 
-debian_other_arches = [
+debian_non_buster_arches = [
     DebianArch("ppc64le", "ppc64el", "powerpc64le-unknown-linux-gnu"),
 ]
 
@@ -186,9 +186,13 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
                 tags.append(version_tag)
             tags.append("latest")
 
+        arches = debian_arches[:]
+        if variant != "buster":
+            arches += debian_non_buster_arches
+
         library += single_library(
                 tags,
-                map(lambda a: a.bashbrew, debian_arches),
+                map(lambda a: a.bashbrew, arches),
                 os.path.join(rust_version, variant))
 
         tags = []
@@ -202,7 +206,7 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
 
         library += single_library(
                 tags,
-                map(lambda a: a.bashbrew, debian_arches),
+                map(lambda a: a.bashbrew, arches),
                 os.path.join(rust_version, variant, "slim"))
 
     for version in alpine_versions:
