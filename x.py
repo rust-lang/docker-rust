@@ -18,6 +18,10 @@ debian_arches = [
     DebianArch("i386", "i386", "i686-unknown-linux-gnu"),
 ]
 
+debian_non_buster_arches = [
+    DebianArch("ppc64le", "ppc64el", "powerpc64le-unknown-linux-gnu"),
+]
+
 debian_variants = [
     "buster",
     "bullseye",
@@ -62,25 +66,34 @@ def update_debian():
     for arch in debian_arches:
         hash = rustup_hash(arch.rust)
         arch_case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
-    arch_case += '        *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \\\n'
-    arch_case += '    esac'
+
+    end = '        *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \\\n'
+    end += '    esac'
 
     template = read_file("Dockerfile-debian.template")
     slim_template = read_file("Dockerfile-slim.template")
 
     for variant in debian_variants:
+        case = arch_case
+        if variant != "buster":
+            for arch in debian_non_buster_arches:
+                hash = rustup_hash(arch.rust)
+                case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
+
+        case += end
+
         rendered = template \
             .replace("%%RUST-VERSION%%", rust_version) \
             .replace("%%RUSTUP-VERSION%%", rustup_version) \
             .replace("%%DEBIAN-SUITE%%", variant) \
-            .replace("%%ARCH-CASE%%", arch_case)
+            .replace("%%ARCH-CASE%%", case)
         write_file(f"{rust_version}/{variant}/Dockerfile", rendered)
 
         rendered = slim_template \
             .replace("%%RUST-VERSION%%", rust_version) \
             .replace("%%RUSTUP-VERSION%%", rustup_version) \
             .replace("%%DEBIAN-SUITE%%", variant) \
-            .replace("%%ARCH-CASE%%", arch_case)
+            .replace("%%ARCH-CASE%%", case)
         write_file(f"{rust_version}/{variant}/slim/Dockerfile", rendered)
 
 def update_alpine():
@@ -170,9 +183,13 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
                 tags.append(version_tag)
             tags.append("latest")
 
+        arches = debian_arches[:]
+        if variant != "buster":
+            arches += debian_non_buster_arches
+
         library += single_library(
                 tags,
-                map(lambda a: a.bashbrew, debian_arches),
+                map(lambda a: a.bashbrew, arches),
                 os.path.join(rust_version, variant))
 
         tags = []
@@ -186,7 +203,7 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
 
         library += single_library(
                 tags,
-                map(lambda a: a.bashbrew, debian_arches),
+                map(lambda a: a.bashbrew, arches),
                 os.path.join(rust_version, variant, "slim"))
 
     for version in alpine_versions:
