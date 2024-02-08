@@ -1,11 +1,18 @@
-FROM buildpack-deps:bookworm
+FROM debian:bookworm-slim
 
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.75.0
+    RUST_VERSION=1.76.0
 
 RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        gcc \
+        libc6-dev \
+        wget \
+        ; \
     dpkgArch="$(dpkg --print-architecture)"; \
     case "${dpkgArch##*-}" in \
         amd64) rustArch='x86_64-unknown-linux-gnu'; rustupSha256='0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db' ;; \
@@ -24,4 +31,8 @@ RUN set -eux; \
     chmod -R a+w $RUSTUP_HOME $CARGO_HOME; \
     rustup --version; \
     cargo --version; \
-    rustc --version;
+    rustc --version; \
+    apt-get remove -y --auto-remove \
+        wget \
+        ; \
+    rm -rf /var/lib/apt/lists/*;
