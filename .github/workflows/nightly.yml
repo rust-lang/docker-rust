@@ -1,0 +1,99 @@
+name: Nightly Publish
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+#VERSIONS
+          - name: buster
+            context: nightly/buster
+            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386
+            tags: |
+              nightly-buster
+          - name: slim-buster
+            context: nightly/buster/slim
+            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386
+            tags: |
+              nightly-buster-slim
+          - name: bullseye
+            context: nightly/bullseye
+            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le
+            tags: |
+              nightly-bullseye
+          - name: slim-bullseye
+            context: nightly/bullseye/slim
+            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le
+            tags: |
+              nightly-bullseye-slim
+          - name: bookworm
+            context: nightly/bookworm
+            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le
+            tags: |
+              nightly-bookworm
+              nightly
+          - name: slim-bookworm
+            context: nightly/bookworm/slim
+            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le
+            tags: |
+              nightly-bookworm-slim
+              nightly-slim
+          - name: alpine3.18
+            context: nightly/alpine3.18
+            platforms: linux/amd64,linux/arm64
+            tags: |
+              nightly-alpine3.18
+          - name: alpine3.19
+            context: nightly/alpine3.19
+            platforms: linux/amd64,linux/arm64
+            tags: |
+              nightly-alpine3.19
+              nightly-alpine
+#VERSIONS
+    name: ${{ matrix.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+#      - uses: docker/login-action@v3
+#        if: github.event_name != 'pull_request'
+#        with:
+#          registry: ghcr.io
+#          username: ${{ github.actor }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          username: rustopsbot
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            rustlang/rust
+#            ghcr.io/rust-lang/rust
+          tags: ${{ matrix.tags }}
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          platforms: ${{ matrix.platforms }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
