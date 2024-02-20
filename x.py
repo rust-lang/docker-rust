@@ -6,20 +6,21 @@ import os
 import subprocess
 import sys
 
-rust_version = "1.76.0"
+stable_rust_version = "1.76.0"
+supported_rust_versions = [stable_rust_version, "nightly"]
 rustup_version = "1.26.0"
 
-DebianArch = namedtuple("DebianArch", ["bashbrew", "dpkg", "rust"])
+DebianArch = namedtuple("DebianArch", ["bashbrew", "dpkg", "qemu", "rust"])
 
 debian_arches = [
-    DebianArch("amd64", "amd64", "x86_64-unknown-linux-gnu"),
-    DebianArch("arm32v7", "armhf", "armv7-unknown-linux-gnueabihf"),
-    DebianArch("arm64v8", "arm64", "aarch64-unknown-linux-gnu"),
-    DebianArch("i386", "i386", "i686-unknown-linux-gnu"),
+    DebianArch("amd64", "amd64", "linux/amd64", "x86_64-unknown-linux-gnu"),
+    DebianArch("arm32v7", "armhf", "linux/arm/v7", "armv7-unknown-linux-gnueabihf"),
+    DebianArch("arm64v8", "arm64", "linux/arm64", "aarch64-unknown-linux-gnu"),
+    DebianArch("i386", "i386", "linux/386", "i686-unknown-linux-gnu"),
 ]
 
 debian_non_buster_arches = [
-    DebianArch("ppc64le", "ppc64el", "powerpc64le-unknown-linux-gnu"),
+    DebianArch("ppc64le", "ppc64el", "linux/ppc64le", "powerpc64le-unknown-linux-gnu"),
 ]
 
 debian_variants = [
@@ -30,11 +31,11 @@ debian_variants = [
 
 default_debian_variant = "bookworm"
 
-AlpineArch = namedtuple("AlpineArch", ["bashbrew", "apk", "rust"])
+AlpineArch = namedtuple("AlpineArch", ["bashbrew", "apk", "qemu", "rust"])
 
 alpine_arches = [
-    AlpineArch("amd64", "x86_64", "x86_64-unknown-linux-musl"),
-    AlpineArch("arm64v8", "aarch64", "aarch64-unknown-linux-musl"),
+    AlpineArch("amd64", "x86_64", "linux/amd64", "x86_64-unknown-linux-musl"),
+    AlpineArch("arm64v8", "aarch64", "linux/arm64", "aarch64-unknown-linux-musl"),
 ]
 
 alpine_versions = [
@@ -82,19 +83,20 @@ def update_debian():
 
         case += end
 
-        rendered = template \
-            .replace("%%RUST-VERSION%%", rust_version) \
-            .replace("%%RUSTUP-VERSION%%", rustup_version) \
-            .replace("%%DEBIAN-SUITE%%", variant) \
-            .replace("%%ARCH-CASE%%", case)
-        write_file(f"{rust_version}/{variant}/Dockerfile", rendered)
+        for rust_version in supported_rust_versions:
+            rendered = template \
+                .replace("%%RUST-VERSION%%", rust_version) \
+                .replace("%%RUSTUP-VERSION%%", rustup_version) \
+                .replace("%%DEBIAN-SUITE%%", variant) \
+                .replace("%%ARCH-CASE%%", case)
+            write_file(f"{rust_version}/{variant}/Dockerfile", rendered)
 
-        rendered = slim_template \
-            .replace("%%RUST-VERSION%%", rust_version) \
-            .replace("%%RUSTUP-VERSION%%", rustup_version) \
-            .replace("%%DEBIAN-SUITE%%", variant) \
-            .replace("%%ARCH-CASE%%", case)
-        write_file(f"{rust_version}/{variant}/slim/Dockerfile", rendered)
+            rendered = slim_template \
+                .replace("%%RUST-VERSION%%", rust_version) \
+                .replace("%%RUSTUP-VERSION%%", rustup_version) \
+                .replace("%%DEBIAN-SUITE%%", variant) \
+                .replace("%%ARCH-CASE%%", case)
+            write_file(f"{rust_version}/{variant}/slim/Dockerfile", rendered)
 
 def update_alpine():
     arch_case = 'apkArch="$(apk --print-arch)"; \\\n'
@@ -108,12 +110,13 @@ def update_alpine():
     template = read_file("Dockerfile-alpine.template")
 
     for version in alpine_versions:
-        rendered = template \
-            .replace("%%RUST-VERSION%%", rust_version) \
-            .replace("%%RUSTUP-VERSION%%", rustup_version) \
-            .replace("%%TAG%%", version) \
-            .replace("%%ARCH-CASE%%", arch_case)
-        write_file(f"{rust_version}/alpine{version}/Dockerfile", rendered)
+        for rust_version in supported_rust_versions:
+            rendered = template \
+                .replace("%%RUST-VERSION%%", rust_version) \
+                .replace("%%RUSTUP-VERSION%%", rustup_version) \
+                .replace("%%TAG%%", version) \
+                .replace("%%ARCH-CASE%%", arch_case)
+            write_file(f"{rust_version}/alpine{version}/Dockerfile", rendered)
 
 def update_ci():
     file = ".github/workflows/ci.yml"
@@ -121,7 +124,7 @@ def update_ci():
 
     marker = "#RUST_VERSION\n"
     split = config.split(marker)
-    rendered = split[0] + marker + f"      RUST_VERSION: {rust_version}\n" + marker + split[2]
+    rendered = split[0] + marker + f"      RUST_VERSION: {stable_rust_version}\n" + marker + split[2]
 
     versions = ""
     for variant in debian_variants:
@@ -139,6 +142,61 @@ def update_ci():
     rendered = split[0] + marker + versions + marker + split[2]
     write_file(file, rendered)
 
+def update_nightly_ci():
+    file = ".github/workflows/nightly.yml"
+    config = read_file(file)
+
+
+    versions = ""
+    for variant in debian_variants:
+        platforms = []
+        for arch in debian_arches:
+            platforms.append(f"{arch.qemu}")
+        if variant != "buster":
+            for arch in debian_non_buster_arches:
+                platforms.append(f"{arch.qemu}")
+        platforms = ",".join(platforms)
+
+        tags = [f"nightly-{variant}"]
+        if variant == default_debian_variant:
+            tags.append("nightly")
+
+        versions += f"          - name: {variant}\n"
+        versions += f"            context: nightly/{variant}\n"
+        versions += f"            platforms: {platforms}\n"
+        versions += f"            tags: |\n"
+        for tag in tags:
+            versions += f"              {tag}\n"
+
+        versions += f"          - name: slim-{variant}\n"
+        versions += f"            context: nightly/{variant}/slim\n"
+        versions += f"            platforms: {platforms}\n"
+        versions += f"            tags: |\n"
+        for tag in tags:
+            versions += f"              {tag}-slim\n"
+
+    for version in alpine_versions:
+        platforms = []
+        for arch in alpine_arches:
+            platforms.append(f"{arch.qemu}")
+        platforms = ",".join(platforms)
+
+        tags = [f"nightly-alpine{version}"]
+        if version == default_alpine_version:
+            tags.append("nightly-alpine")
+
+        versions += f"          - name: alpine{version}\n"
+        versions += f"            context: nightly/alpine{version}\n"
+        versions += f"            platforms: {platforms}\n"
+        versions += f"            tags: |\n"
+        for tag in tags:
+            versions += f"              {tag}\n"
+
+    marker = "#VERSIONS\n"
+    split = config.split(marker)
+    rendered = split[0] + marker + versions + marker + split[2]
+    write_file(file, rendered)
+
 def file_commit(file):
     return subprocess.run(
             ["git", "log", "-1", "--format=%H", "HEAD", "--", file],
@@ -148,7 +206,7 @@ def file_commit(file):
         .strip()
 
 def version_tags():
-    parts = rust_version.split(".")
+    parts = stable_rust_version.split(".")
     tags = []
     for i in range(len(parts)):
         tags.append(".".join(parts[:i + 1]))
@@ -190,7 +248,7 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
         library += single_library(
                 tags,
                 map(lambda a: a.bashbrew, arches),
-                os.path.join(rust_version, variant))
+                os.path.join(stable_rust_version, variant))
 
         tags = []
         for version_tag in version_tags():
@@ -204,7 +262,7 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
         library += single_library(
                 tags,
                 map(lambda a: a.bashbrew, arches),
-                os.path.join(rust_version, variant, "slim"))
+                os.path.join(stable_rust_version, variant, "slim"))
 
     for version in alpine_versions:
         tags = []
@@ -219,7 +277,7 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
         library += single_library(
             tags,
             map(lambda a: a.bashbrew, alpine_arches),
-            os.path.join(rust_version, f"alpine{version}"))
+            os.path.join(stable_rust_version, f"alpine{version}"))
 
     print(library)
 
@@ -236,6 +294,7 @@ if __name__ == "__main__":
         update_debian()
         update_alpine()
         update_ci()
+        update_nightly_ci()
     elif task == "generate-stackbrew-library":
         generate_stackbrew_library()
     else:
