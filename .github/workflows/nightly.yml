@@ -88,7 +88,7 @@ jobs:
         with:
           images: |
             rustlang/rust
-#            ghcr.io/rust-lang/rust
+            ghcr.io/rust-lang/rust
           tags: ${{ matrix.tags }}
 
       - uses: docker/build-push-action@v5
