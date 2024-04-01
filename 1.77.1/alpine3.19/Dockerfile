@@ -7,7 +7,7 @@ RUN apk add --no-cache \
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.77.0
+    RUST_VERSION=1.77.1
 
 RUN set -eux; \
     apkArch="$(apk --print-arch)"; \
