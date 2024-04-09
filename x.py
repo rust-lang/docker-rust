@@ -6,7 +6,7 @@ import os
 import subprocess
 import sys
 
-stable_rust_version = "1.77.1"
+stable_rust_version = "1.77.2"
 supported_rust_versions = [stable_rust_version, "nightly"]
 rustup_version = "1.27.0"
 
