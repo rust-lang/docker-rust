@@ -33,23 +33,23 @@ jobs:
               nightly-buster-slim
           - name: bullseye
             context: nightly/bullseye
-            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le
+            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le,linux/s390x
             tags: |
               nightly-bullseye
           - name: slim-bullseye
             context: nightly/bullseye/slim
-            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le
+            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le,linux/s390x
             tags: |
               nightly-bullseye-slim
           - name: bookworm
             context: nightly/bookworm
-            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le
+            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le,linux/s390x
             tags: |
               nightly-bookworm
               nightly
           - name: slim-bookworm
             context: nightly/bookworm/slim
-            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le
+            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le,linux/s390x
             tags: |
               nightly-bookworm-slim
               nightly-slim
