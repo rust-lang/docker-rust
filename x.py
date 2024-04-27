@@ -21,6 +21,7 @@ debian_arches = [
 
 debian_non_buster_arches = [
     DebianArch("ppc64le", "ppc64el", "linux/ppc64le", "powerpc64le-unknown-linux-gnu"),
+    DebianArch("s390x", "s390x", "linux/s390x", "s390x-unknown-linux-gnu"),
 ]
 
 debian_variants = [
