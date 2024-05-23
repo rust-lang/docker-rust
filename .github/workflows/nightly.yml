@@ -53,16 +53,16 @@ jobs:
             tags: |
               nightly-bookworm-slim
               nightly-slim
-          - name: alpine3.18
-            context: nightly/alpine3.18
-            platforms: linux/amd64,linux/arm64
-            tags: |
-              nightly-alpine3.18
           - name: alpine3.19
             context: nightly/alpine3.19
             platforms: linux/amd64,linux/arm64
             tags: |
               nightly-alpine3.19
+          - name: alpine3.20
+            context: nightly/alpine3.20
+            platforms: linux/amd64,linux/arm64
+            tags: |
+              nightly-alpine3.20
               nightly-alpine
 #VERSIONS
     name: ${{ matrix.name }}

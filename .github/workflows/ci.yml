@@ -36,10 +36,10 @@ jobs:
             variant: bookworm
           - name: slim-bookworm
             variant: bookworm/slim
-          - name: alpine3.18
-            variant: alpine3.18
           - name: alpine3.19
             variant: alpine3.19
+          - name: alpine3.20
+            variant: alpine3.20
 #VERSIONS
     name: ${{ matrix.name }}
     steps:
