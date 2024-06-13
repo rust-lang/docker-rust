@@ -8,7 +8,7 @@ import sys
 
 stable_rust_version = "1.79.0"
 supported_rust_versions = [stable_rust_version, "nightly"]
-rustup_version = "1.27.0"
+rustup_version = "1.27.1"
 
 DebianArch = namedtuple("DebianArch", ["bashbrew", "dpkg", "qemu", "rust"])
 
