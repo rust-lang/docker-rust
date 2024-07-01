@@ -24,10 +24,6 @@ jobs:
       matrix:
         include:
 #VERSIONS
-          - name: buster
-            variant: buster
-          - name: slim-buster
-            variant: buster/slim
           - name: bullseye
             variant: bullseye
           - name: slim-bullseye

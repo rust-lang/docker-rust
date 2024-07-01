@@ -21,16 +21,6 @@ jobs:
       matrix:
         include:
 #VERSIONS
-          - name: buster
-            context: nightly/buster
-            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386
-            tags: |
-              nightly-buster
-          - name: slim-buster
-            context: nightly/buster/slim
-            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386
-            tags: |
-              nightly-buster-slim
           - name: bullseye
             context: nightly/bullseye
             platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le,linux/s390x
