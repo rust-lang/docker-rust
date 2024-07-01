@@ -17,15 +17,11 @@ debian_arches = [
     DebianArch("arm32v7", "armhf", "linux/arm/v7", "armv7-unknown-linux-gnueabihf"),
     DebianArch("arm64v8", "arm64", "linux/arm64", "aarch64-unknown-linux-gnu"),
     DebianArch("i386", "i386", "linux/386", "i686-unknown-linux-gnu"),
-]
-
-debian_non_buster_arches = [
     DebianArch("ppc64le", "ppc64el", "linux/ppc64le", "powerpc64le-unknown-linux-gnu"),
     DebianArch("s390x", "s390x", "linux/s390x", "s390x-unknown-linux-gnu"),
 ]
 
 debian_variants = [
-    "buster",
     "bullseye",
     "bookworm",
 ]
@@ -77,11 +73,6 @@ def update_debian():
 
     for variant in debian_variants:
         case = arch_case
-        if variant != "buster":
-            for arch in debian_non_buster_arches:
-                hash = rustup_hash(arch.rust)
-                case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
-
         case += end
 
         for rust_version in supported_rust_versions:
@@ -153,9 +144,6 @@ def update_nightly_ci():
         platforms = []
         for arch in debian_arches:
             platforms.append(f"{arch.qemu}")
-        if variant != "buster":
-            for arch in debian_non_buster_arches:
-                platforms.append(f"{arch.qemu}")
         platforms = ",".join(platforms)
 
         tags = [f"nightly-{variant}"]
@@ -243,8 +231,6 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
             tags.append("latest")
 
         arches = debian_arches[:]
-        if variant != "buster":
-            arches += debian_non_buster_arches
 
         library += single_library(
                 tags,
