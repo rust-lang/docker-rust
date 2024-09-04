@@ -1,4 +1,4 @@
-FROM alpine:3.20
+FROM alpine:3.19
 
 LABEL org.opencontainers.image.source=https://github.com/rust-lang/docker-rust
 
@@ -9,7 +9,7 @@ RUN apk add --no-cache \
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.80.1
+    RUST_VERSION=1.81.0
 
 RUN set -eux; \
     apkArch="$(apk --print-arch)"; \
