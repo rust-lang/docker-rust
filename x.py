@@ -6,9 +6,15 @@ import os
 import subprocess
 import sys
 
-stable_rust_version = "1.81.0"
-supported_rust_versions = [stable_rust_version, "nightly"]
 rustup_version = "1.27.1"
+
+Channel = namedtuple("Channel", ["name", "rust_version"])
+stable = Channel("stable", "1.81.0")
+nightly = Channel("nightly", "nightly")
+supported_channels = [
+    stable,
+    nightly
+]
 
 DebianArch = namedtuple("DebianArch", ["bashbrew", "dpkg", "qemu", "rust"])
 
@@ -78,20 +84,20 @@ def update_debian():
             arch_case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
         arch_case += end
 
-        for rust_version in supported_rust_versions:
+        for channel in supported_channels:
             rendered = template \
-                .replace("%%RUST-VERSION%%", rust_version) \
+                .replace("%%RUST-VERSION%%", channel.rust_version) \
                 .replace("%%RUSTUP-VERSION%%", rustup_version) \
                 .replace("%%DEBIAN-SUITE%%", variant.name) \
                 .replace("%%ARCH-CASE%%", arch_case)
-            write_file(f"{rust_version}/{variant.name}/Dockerfile", rendered)
+            write_file(f"{channel.name}/{variant.name}/Dockerfile", rendered)
 
             rendered = slim_template \
-                .replace("%%RUST-VERSION%%", rust_version) \
+                .replace("%%RUST-VERSION%%", channel.rust_version) \
                 .replace("%%RUSTUP-VERSION%%", rustup_version) \
                 .replace("%%DEBIAN-SUITE%%", variant.name) \
                 .replace("%%ARCH-CASE%%", arch_case)
-            write_file(f"{rust_version}/{variant.name}/slim/Dockerfile", rendered)
+            write_file(f"{channel.name}/{variant.name}/slim/Dockerfile", rendered)
 
 def update_alpine():
     arch_case = 'apkArch="$(apk --print-arch)"; \\\n'
@@ -105,13 +111,13 @@ def update_alpine():
     template = read_file("Dockerfile-alpine.template")
 
     for version in alpine_versions:
-        for rust_version in supported_rust_versions:
+        for channel in supported_channels:
             rendered = template \
-                .replace("%%RUST-VERSION%%", rust_version) \
+                .replace("%%RUST-VERSION%%", channel.rust_version) \
                 .replace("%%RUSTUP-VERSION%%", rustup_version) \
                 .replace("%%TAG%%", version) \
                 .replace("%%ARCH-CASE%%", arch_case)
-            write_file(f"{rust_version}/alpine{version}/Dockerfile", rendered)
+            write_file(f"{channel.name}/alpine{version}/Dockerfile", rendered)
 
 def update_ci():
     file = ".github/workflows/ci.yml"
@@ -119,7 +125,7 @@ def update_ci():
 
     marker = "#RUST_VERSION\n"
     split = config.split(marker)
-    rendered = split[0] + marker + f"      RUST_VERSION: {stable_rust_version}\n" + marker + split[2]
+    rendered = split[0] + marker + f"      RUST_VERSION: {stable.rust_version}\n" + marker + split[2]
 
     versions = ""
     for variant in debian_variants:
@@ -198,7 +204,7 @@ def file_commit(file):
         .strip()
 
 def version_tags():
-    parts = stable_rust_version.split(".")
+    parts = stable.rust_version.split(".")
     tags = []
     for i in range(len(parts)):
         tags.append(".".join(parts[:i + 1]))
@@ -238,7 +244,7 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
         library += single_library(
                 tags,
                 map(lambda a: a.bashbrew, arches),
-                os.path.join(stable_rust_version, variant.name))
+                os.path.join(stable.name, variant.name))
 
         tags = []
         for version_tag in version_tags():
@@ -252,7 +258,7 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
         library += single_library(
                 tags,
                 map(lambda a: a.bashbrew, arches),
-                os.path.join(stable_rust_version, variant.name, "slim"))
+                os.path.join(stable.name, variant.name, "slim"))
 
     for version in alpine_versions:
         tags = []
@@ -267,7 +273,7 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
         library += single_library(
             tags,
             map(lambda a: a.bashbrew, alpine_arches),
-            os.path.join(stable_rust_version, f"alpine{version}"))
+            os.path.join(stable.name, f"alpine{version}"))
 
     print(library)
 
