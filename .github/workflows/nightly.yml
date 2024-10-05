@@ -23,12 +23,12 @@ jobs:
 #VERSIONS
           - name: bullseye
             context: nightly/bullseye
-            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le,linux/s390x
+            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386
             tags: |
               nightly-bullseye
           - name: slim-bullseye
             context: nightly/bullseye/slim
-            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le,linux/s390x
+            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386
             tags: |
               nightly-bullseye-slim
           - name: bookworm
