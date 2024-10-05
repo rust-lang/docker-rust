@@ -12,18 +12,23 @@ rustup_version = "1.27.1"
 
 DebianArch = namedtuple("DebianArch", ["bashbrew", "dpkg", "qemu", "rust"])
 
-debian_arches = [
+debian_lts_arches = [
     DebianArch("amd64", "amd64", "linux/amd64", "x86_64-unknown-linux-gnu"),
     DebianArch("arm32v7", "armhf", "linux/arm/v7", "armv7-unknown-linux-gnueabihf"),
     DebianArch("arm64v8", "arm64", "linux/arm64", "aarch64-unknown-linux-gnu"),
     DebianArch("i386", "i386", "linux/386", "i686-unknown-linux-gnu"),
+]
+
+debian_non_lts_arches = [
     DebianArch("ppc64le", "ppc64el", "linux/ppc64le", "powerpc64le-unknown-linux-gnu"),
     DebianArch("s390x", "s390x", "linux/s390x", "s390x-unknown-linux-gnu"),
 ]
 
+DebianVariant = namedtuple("DebianVariant", ["name", "arches"])
+
 debian_variants = [
-    "bullseye",
-    "bookworm",
+    DebianVariant("bullseye", debian_lts_arches),
+    DebianVariant("bookworm", debian_lts_arches + debian_non_lts_arches),
 ]
 
 default_debian_variant = "bookworm"
@@ -59,12 +64,6 @@ def write_file(file, contents):
         f.write(contents)
 
 def update_debian():
-    arch_case = 'dpkgArch="$(dpkg --print-architecture)"; \\\n'
-    arch_case += '    case "${dpkgArch##*-}" in \\\n'
-    for arch in debian_arches:
-        hash = rustup_hash(arch.rust)
-        arch_case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
-
     end = '        *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \\\n'
     end += '    esac'
 
@@ -72,23 +71,27 @@ def update_debian():
     slim_template = read_file("Dockerfile-slim.template")
 
     for variant in debian_variants:
-        case = arch_case
-        case += end
+        arch_case = 'dpkgArch="$(dpkg --print-architecture)"; \\\n'
+        arch_case += '    case "${dpkgArch##*-}" in \\\n'
+        for arch in variant.arches:
+            hash = rustup_hash(arch.rust)
+            arch_case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
+        arch_case += end
 
         for rust_version in supported_rust_versions:
             rendered = template \
                 .replace("%%RUST-VERSION%%", rust_version) \
                 .replace("%%RUSTUP-VERSION%%", rustup_version) \
-                .replace("%%DEBIAN-SUITE%%", variant) \
-                .replace("%%ARCH-CASE%%", case)
-            write_file(f"{rust_version}/{variant}/Dockerfile", rendered)
+                .replace("%%DEBIAN-SUITE%%", variant.name) \
+                .replace("%%ARCH-CASE%%", arch_case)
+            write_file(f"{rust_version}/{variant.name}/Dockerfile", rendered)
 
             rendered = slim_template \
                 .replace("%%RUST-VERSION%%", rust_version) \
                 .replace("%%RUSTUP-VERSION%%", rustup_version) \
-                .replace("%%DEBIAN-SUITE%%", variant) \
-                .replace("%%ARCH-CASE%%", case)
-            write_file(f"{rust_version}/{variant}/slim/Dockerfile", rendered)
+                .replace("%%DEBIAN-SUITE%%", variant.name) \
+                .replace("%%ARCH-CASE%%", arch_case)
+            write_file(f"{rust_version}/{variant.name}/slim/Dockerfile", rendered)
 
 def update_alpine():
     arch_case = 'apkArch="$(apk --print-arch)"; \\\n'
@@ -120,10 +123,10 @@ def update_ci():
 
     versions = ""
     for variant in debian_variants:
-        versions += f"          - name: {variant}\n"
-        versions += f"            variant: {variant}\n"
-        versions += f"          - name: slim-{variant}\n"
-        versions += f"            variant: {variant}/slim\n"
+        versions += f"          - name: {variant.name}\n"
+        versions += f"            variant: {variant.name}\n"
+        versions += f"          - name: slim-{variant.name}\n"
+        versions += f"            variant: {variant.name}/slim\n"
 
     for version in alpine_versions:
         versions += f"          - name: alpine{version}\n"
@@ -142,23 +145,23 @@ def update_nightly_ci():
     versions = ""
     for variant in debian_variants:
         platforms = []
-        for arch in debian_arches:
+        for arch in variant.arches:
             platforms.append(f"{arch.qemu}")
         platforms = ",".join(platforms)
 
-        tags = [f"nightly-{variant}"]
-        if variant == default_debian_variant:
+        tags = [f"nightly-{variant.name}"]
+        if variant.name == default_debian_variant:
             tags.append("nightly")
 
-        versions += f"          - name: {variant}\n"
-        versions += f"            context: nightly/{variant}\n"
+        versions += f"          - name: {variant.name}\n"
+        versions += f"            context: nightly/{variant.name}\n"
         versions += f"            platforms: {platforms}\n"
         versions += f"            tags: |\n"
         for tag in tags:
             versions += f"              {tag}\n"
 
-        versions += f"          - name: slim-{variant}\n"
-        versions += f"            context: nightly/{variant}/slim\n"
+        versions += f"          - name: slim-{variant.name}\n"
+        versions += f"            context: nightly/{variant.name}/slim\n"
         versions += f"            platforms: {platforms}\n"
         versions += f"            tags: |\n"
         for tag in tags:
@@ -223,25 +226,25 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
     for variant in debian_variants:
         tags = []
         for version_tag in version_tags():
-            tags.append(f"{version_tag}-{variant}")
-        tags.append(variant)
-        if variant == default_debian_variant:
+            tags.append(f"{version_tag}-{variant.name}")
+        tags.append(variant.name)
+        if variant.name == default_debian_variant:
             for version_tag in version_tags():
                 tags.append(version_tag)
             tags.append("latest")
 
-        arches = debian_arches[:]
+        arches = variant.arches[:]
 
         library += single_library(
                 tags,
                 map(lambda a: a.bashbrew, arches),
-                os.path.join(stable_rust_version, variant))
+                os.path.join(stable_rust_version, variant.name))
 
         tags = []
         for version_tag in version_tags():
-            tags.append(f"{version_tag}-slim-{variant}")
-        tags.append(f"slim-{variant}")
-        if variant == default_debian_variant:
+            tags.append(f"{version_tag}-slim-{variant.name}")
+        tags.append(f"slim-{variant.name}")
+        if variant.name == default_debian_variant:
             for version_tag in version_tags():
                 tags.append(f"{version_tag}-slim")
             tags.append("slim")
@@ -249,7 +252,7 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
         library += single_library(
                 tags,
                 map(lambda a: a.bashbrew, arches),
-                os.path.join(stable_rust_version, variant, "slim"))
+                os.path.join(stable_rust_version, variant.name, "slim"))
 
     for version in alpine_versions:
         tags = []
