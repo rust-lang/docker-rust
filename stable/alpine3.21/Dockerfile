@@ -14,11 +14,11 @@ ENV RUSTUP_HOME=/usr/local/rustup \
 RUN set -eux; \
     apkArch="$(apk --print-arch)"; \
     case "$apkArch" in \
-        x86_64) rustArch='x86_64-unknown-linux-musl'; rustupSha256='55a7f503ce16250d1ffb227f0fa7aa8a9305924dca2890957c7fec7a4888111c' ;; \
-        aarch64) rustArch='aarch64-unknown-linux-musl'; rustupSha256='415c9461158325e0d58af7f8fc61e85cd7f079e93f9784d266c5ee9c95ed762c' ;; \
+        x86_64) rustArch='x86_64-unknown-linux-musl'; rustupSha256='8e60c9157b7aa2bf32baab5c124b80a31dd24ba6c41b39b50645d354d381f831' ;; \
+        aarch64) rustArch='aarch64-unknown-linux-musl'; rustupSha256='b3ceb9642150570b1cc43b279441dc98062a100b1974e9f6a518517c8b5900a8' ;; \
         *) echo >&2 "unsupported architecture: $apkArch"; exit 1 ;; \
     esac; \
-    url="https://static.rust-lang.org/rustup/archive/1.28.0/${rustArch}/rustup-init"; \
+    url="https://static.rust-lang.org/rustup/archive/1.28.1/${rustArch}/rustup-init"; \
     wget "$url"; \
     echo "${rustupSha256} *rustup-init" | sha256sum -c -; \
     chmod +x rustup-init; \
