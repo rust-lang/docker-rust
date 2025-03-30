@@ -5,11 +5,18 @@ from urllib import request
 import os
 import subprocess
 import sys
+import tomllib
 
-rustup_version = "1.28.2"
+def load_versions():
+    with open("versions.toml", "rb") as f:
+        versions = tomllib.load(f)
+        rust_version = versions['rust']
+        rustup_version = versions['rustup']
+    return rust_version, rustup_version
 
+rust_version, rustup_version = load_versions()
 Channel = namedtuple("Channel", ["name", "rust_version"])
-stable = Channel("stable", "1.91.1")
+stable = Channel("stable", rust_version)
 nightly = Channel("nightly", "nightly")
 supported_channels = [
     stable,
