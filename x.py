@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
+import argparse
 from collections import namedtuple
 from urllib import request
 import os
 import subprocess
-import sys
 import tomllib
 
 def load_versions():
@@ -13,6 +13,11 @@ def load_versions():
         rust_version = versions['rust']
         rustup_version = versions['rustup']
     return rust_version, rustup_version
+
+def write_versions(rust_version, rustup_version):
+    with open("versions.toml", "w") as f:
+        f.write(f'rust = "{rust_version}"\n')
+        f.write(f'rustup = "{rustup_version}"\n')
 
 rust_version, rustup_version = load_versions()
 Channel = namedtuple("Channel", ["name", "rust_version"])
@@ -373,22 +378,31 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
 
     print(library)
 
-def usage():
-    print(f"Usage: {sys.argv[0]} update|generate-stackbrew-library")
-    sys.exit(1)
-
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        usage()
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest='subcommand', required=True)
 
-    task = sys.argv[1]
-    if task == "update":
+    update_parser = subparsers.add_parser('update')
+    update_parser.add_argument('--rust', metavar='VERSION', dest='rust', action='store')
+    update_parser.add_argument('--rustup', metavar='VERSION', dest='rustup', action='store')
+
+    generate_stackbrew_library_parser = subparsers.add_parser('generate-stackbrew-library')
+
+    args = parser.parse_args()
+    if args.subcommand == "update":
+        if args.rust:
+            rust_version = args.rust
+            stable = Channel("stable", rust_version)
+            write_versions(rust_version, rustup_version)
+
+        if args.rustup:
+            rustup_version = args.rustup
+            write_versions(rust_version, rustup_version)
+
         update_debian()
         update_alpine()
         update_ci()
         update_mirror_stable_ci()
-        update_nightly_ci() 
-    elif task == "generate-stackbrew-library":
+        update_nightly_ci()
+    elif args.subcommand == "generate-stackbrew-library":
         generate_stackbrew_library()
-    else:
-        usage()
