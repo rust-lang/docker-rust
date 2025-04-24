@@ -15,7 +15,7 @@ An image tracking the Rust nightly toolchain is available via
 
 ## License
 
-Copyright 2017-2024 The Rust Project Developers
+Copyright The Rust Project Developers
 
 Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
 [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)> or the MIT license
