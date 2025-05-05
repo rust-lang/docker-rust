@@ -6,7 +6,7 @@ import os
 import subprocess
 import sys
 
-rustup_version = "1.28.1"
+rustup_version = "1.28.2"
 
 Channel = namedtuple("Channel", ["name", "rust_version"])
 stable = Channel("stable", "1.86.0")
