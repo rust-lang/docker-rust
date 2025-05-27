@@ -76,18 +76,14 @@ def write_file(file, contents):
         f.write(contents)
 
 def update_debian():
-    end = '        *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \\\n'
-    end += '    esac'
-
     template = read_file("Dockerfile-debian.template")
     slim_template = read_file("Dockerfile-slim.template")
 
     for release in debian_releases:
-        arch_cases_str = 'dpkgArch="$(dpkg --print-architecture)"; \\\n'
-        arch_cases_str += '    case "${dpkgArch##*-}" in \\\n'
+        arch_cases_str = arch_cases_start("$(dpkg --print-architecture)")
         for debian_arch in release.arches:
             arch_cases_str += arch_case(debian_arch.dpkg, debian_arch.rust)
-        arch_cases_str += end
+        arch_cases_str += arch_cases_end()
 
         for channel in supported_channels:
             rendered = template \
@@ -105,12 +101,10 @@ def update_debian():
             write_file(f"{channel.name}/{release.name}/slim/Dockerfile", rendered)
 
 def update_alpine():
-    arch_cases_str = 'apkArch="$(apk --print-arch)"; \\\n'
-    arch_cases_str += '    case "$apkArch" in \\\n'
+    arch_cases_str = arch_cases_start("$(apk --print-arch)")
     for arch in alpine_arches:
         arch_cases_str += arch_case(arch.apk, arch.rust)
-    arch_cases_str += '        *) echo >&2 "unsupported architecture: $apkArch"; exit 1 ;; \\\n'
-    arch_cases_str += '    esac'
+    arch_cases_str += arch_cases_end()
 
     template = read_file("Dockerfile-alpine.template")
 
@@ -122,6 +116,16 @@ def update_alpine():
                 .replace("%%TAG%%", version) \
                 .replace("%%ARCH-CASE%%", arch_cases_str)
             write_file(f"{channel.name}/alpine{version}/Dockerfile", rendered)
+
+def arch_cases_start(arch_cmd):
+    start = f'arch="{arch_cmd}"; \\\n'
+    start += '    case "$arch" in \\\n'
+    return start
+
+def arch_cases_end():
+    end = '        *) echo >&2 "unsupported architecture: $arch"; exit 1 ;; \\\n'
+    end += '    esac'
+    return end
 
 def arch_case(distro_arch, rust_arch):
     rustup_sha256 = rustup_hash(rust_arch)
