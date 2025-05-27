@@ -131,7 +131,7 @@ def arch_cases_end():
 
 def arch_case(distro_arch, rust_arch):
     rustup_sha256 = rustup_hash(rust_arch)
-    arch_case_str = f"        {distro_arch}) \\\n"
+    arch_case_str = f"        '{distro_arch}') \\\n"
     arch_case_str += f"            rustArch='{rust_arch}'; \\\n"
     arch_case_str += f"            rustupSha256='{rustup_sha256}'; \\\n"
     arch_case_str += "            ;; \\\n"
