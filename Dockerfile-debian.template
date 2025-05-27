@@ -1,4 +1,4 @@
-FROM buildpack-deps:%%DEBIAN-SUITE%%
+FROM buildpack-deps:%%TAG%%
 
 LABEL org.opencontainers.image.source=https://github.com/rust-lang/docker-rust
 

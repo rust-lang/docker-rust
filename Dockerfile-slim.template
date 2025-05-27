@@ -1,4 +1,4 @@
-FROM debian:%%DEBIAN-SUITE%%-slim
+FROM debian:%%TAG%%-slim
 
 LABEL org.opencontainers.image.source=https://github.com/rust-lang/docker-rust
 

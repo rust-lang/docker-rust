@@ -89,14 +89,14 @@ def update_debian():
             rendered = template \
                 .replace("%%RUST-VERSION%%", channel.rust_version) \
                 .replace("%%RUSTUP-VERSION%%", rustup_version) \
-                .replace("%%DEBIAN-SUITE%%", release.name) \
+                .replace("%%TAG%%", release.name) \
                 .replace("%%ARCH-CASE%%", arch_cases_str)
             write_file(f"{channel.name}/{release.name}/Dockerfile", rendered)
 
             rendered = slim_template \
                 .replace("%%RUST-VERSION%%", channel.rust_version) \
                 .replace("%%RUSTUP-VERSION%%", rustup_version) \
-                .replace("%%DEBIAN-SUITE%%", release.name) \
+                .replace("%%TAG%%", release.name) \
                 .replace("%%ARCH-CASE%%", arch_cases_str)
             write_file(f"{channel.name}/{release.name}/slim/Dockerfile", rendered)
 
