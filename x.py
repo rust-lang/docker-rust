@@ -83,36 +83,34 @@ def update_debian():
     slim_template = read_file("Dockerfile-slim.template")
 
     for release in debian_releases:
-        arch_case = 'dpkgArch="$(dpkg --print-architecture)"; \\\n'
-        arch_case += '    case "${dpkgArch##*-}" in \\\n'
+        arch_cases_str = 'dpkgArch="$(dpkg --print-architecture)"; \\\n'
+        arch_cases_str += '    case "${dpkgArch##*-}" in \\\n'
         for debian_arch in release.arches:
-            hash = rustup_hash(debian_arch.rust)
-            arch_case += f"        {debian_arch.dpkg}) rustArch='{debian_arch.rust}'; rustupSha256='{hash}' ;; \\\n"
-        arch_case += end
+            arch_cases_str += arch_case(debian_arch.dpkg, debian_arch.rust)
+        arch_cases_str += end
 
         for channel in supported_channels:
             rendered = template \
                 .replace("%%RUST-VERSION%%", channel.rust_version) \
                 .replace("%%RUSTUP-VERSION%%", rustup_version) \
                 .replace("%%DEBIAN-SUITE%%", release.name) \
-                .replace("%%ARCH-CASE%%", arch_case)
+                .replace("%%ARCH-CASE%%", arch_cases_str)
             write_file(f"{channel.name}/{release.name}/Dockerfile", rendered)
 
             rendered = slim_template \
                 .replace("%%RUST-VERSION%%", channel.rust_version) \
                 .replace("%%RUSTUP-VERSION%%", rustup_version) \
                 .replace("%%DEBIAN-SUITE%%", release.name) \
-                .replace("%%ARCH-CASE%%", arch_case)
+                .replace("%%ARCH-CASE%%", arch_cases_str)
             write_file(f"{channel.name}/{release.name}/slim/Dockerfile", rendered)
 
 def update_alpine():
-    arch_case = 'apkArch="$(apk --print-arch)"; \\\n'
-    arch_case += '    case "$apkArch" in \\\n'
+    arch_cases_str = 'apkArch="$(apk --print-arch)"; \\\n'
+    arch_cases_str += '    case "$apkArch" in \\\n'
     for arch in alpine_arches:
-        hash = rustup_hash(arch.rust)
-        arch_case += f"        {arch.apk}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
-    arch_case += '        *) echo >&2 "unsupported architecture: $apkArch"; exit 1 ;; \\\n'
-    arch_case += '    esac'
+        arch_cases_str += arch_case(arch.apk, arch.rust)
+    arch_cases_str += '        *) echo >&2 "unsupported architecture: $apkArch"; exit 1 ;; \\\n'
+    arch_cases_str += '    esac'
 
     template = read_file("Dockerfile-alpine.template")
 
@@ -122,8 +120,12 @@ def update_alpine():
                 .replace("%%RUST-VERSION%%", channel.rust_version) \
                 .replace("%%RUSTUP-VERSION%%", rustup_version) \
                 .replace("%%TAG%%", version) \
-                .replace("%%ARCH-CASE%%", arch_case)
+                .replace("%%ARCH-CASE%%", arch_cases_str)
             write_file(f"{channel.name}/alpine{version}/Dockerfile", rendered)
+
+def arch_case(distro_arch, rust_arch):
+    rustup_sha256 = rustup_hash(rust_arch)
+    return f"        {distro_arch}) rustArch='{rust_arch}'; rustupSha256='{rustup_sha256}' ;; \\\n"
 
 def update_ci():
     file = ".github/workflows/ci.yml"
