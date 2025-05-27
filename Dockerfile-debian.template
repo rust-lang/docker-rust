@@ -10,7 +10,7 @@ ENV RUSTUP_HOME=/usr/local/rustup \
 RUN set -eux; \
     %%ARCH-CASE%%; \
     url="https://static.rust-lang.org/rustup/archive/%%RUSTUP-VERSION%%/${rustArch}/rustup-init"; \
-    wget "$url"; \
+    wget --progress=dot:giga "$url"; \
     echo "${rustupSha256} *rustup-init" | sha256sum -c -; \
     chmod +x rustup-init; \
     ./rustup-init -y --no-modify-path --profile minimal --default-toolchain $RUST_VERSION --default-host ${rustArch}; \
