@@ -76,9 +76,6 @@ def write_file(file, contents):
         f.write(contents)
 
 def update_debian():
-    template = read_file("Dockerfile-debian.template")
-    slim_template = read_file("Dockerfile-slim.template")
-
     for release in debian_releases:
         arch_cases_str = arch_cases_start("$(dpkg --print-architecture)")
         for debian_arch in release.arches:
@@ -86,19 +83,21 @@ def update_debian():
         arch_cases_str += arch_cases_end()
 
         for channel in supported_channels:
-            rendered = template \
-                .replace("%%RUST-VERSION%%", channel.rust_version) \
-                .replace("%%RUSTUP-VERSION%%", rustup_version) \
-                .replace("%%TAG%%", release.name) \
-                .replace("%%ARCH-CASE%%", arch_cases_str)
-            write_file(f"{channel.name}/{release.name}/Dockerfile", rendered)
+            render_template(
+                "Dockerfile-debian.template",
+                channel.rust_version,
+                release.name,
+                arch_cases_str,
+                f"{channel.name}/{release.name}/Dockerfile",
+            )
 
-            rendered = slim_template \
-                .replace("%%RUST-VERSION%%", channel.rust_version) \
-                .replace("%%RUSTUP-VERSION%%", rustup_version) \
-                .replace("%%TAG%%", release.name) \
-                .replace("%%ARCH-CASE%%", arch_cases_str)
-            write_file(f"{channel.name}/{release.name}/slim/Dockerfile", rendered)
+            render_template(
+                "Dockerfile-slim.template",
+                channel.rust_version,
+                release.name,
+                arch_cases_str,
+                f"{channel.name}/{release.name}/slim/Dockerfile",
+            )
 
 def update_alpine():
     arch_cases_str = arch_cases_start("$(apk --print-arch)")
@@ -106,16 +105,15 @@ def update_alpine():
         arch_cases_str += arch_case(arch.apk, arch.rust)
     arch_cases_str += arch_cases_end()
 
-    template = read_file("Dockerfile-alpine.template")
-
     for version in alpine_versions:
         for channel in supported_channels:
-            rendered = template \
-                .replace("%%RUST-VERSION%%", channel.rust_version) \
-                .replace("%%RUSTUP-VERSION%%", rustup_version) \
-                .replace("%%TAG%%", version) \
-                .replace("%%ARCH-CASE%%", arch_cases_str)
-            write_file(f"{channel.name}/alpine{version}/Dockerfile", rendered)
+            render_template(
+                "Dockerfile-alpine.template",
+                channel.rust_version,
+                version,
+                arch_cases_str,
+                f"{channel.name}/alpine{version}/Dockerfile",
+            )
 
 def arch_cases_start(arch_cmd):
     start = f'arch="{arch_cmd}"; \\\n'
@@ -130,6 +128,21 @@ def arch_cases_end():
 def arch_case(distro_arch, rust_arch):
     rustup_sha256 = rustup_hash(rust_arch)
     return f"        {distro_arch}) rustArch='{rust_arch}'; rustupSha256='{rustup_sha256}' ;; \\\n"
+
+def render_template(
+    template_path,
+    rust_version,
+    docker_tag,
+    arch_cases,
+    rendered_path
+):
+    template = read_file(template_path)
+    rendered = template \
+        .replace("%%TAG%%", docker_tag) \
+        .replace("%%RUST-VERSION%%", rust_version) \
+        .replace("%%RUSTUP-VERSION%%", rustup_version) \
+        .replace("%%ARCH-CASE%%", arch_cases)
+    write_file(rendered_path, rendered)
 
 def update_ci():
     file = ".github/workflows/ci.yml"
