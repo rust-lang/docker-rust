@@ -52,13 +52,12 @@ alpine_arches = [
     AlpineArch("ppc64le", "ppc64le", "linux/ppc64le", "powerpc64le-unknown-linux-musl"),
 ]
 
+latest_alpine_version = "3.22"
 alpine_versions = [
     "3.20",
     "3.21",
-    "3.22",
+    latest_alpine_version,
 ]
-
-default_alpine_version = "3.22"
 
 def rustup_hash(arch):
     url = f"https://static.rust-lang.org/rustup/archive/{rustup_version}/{arch}/rustup-init.sha256"
@@ -160,7 +159,7 @@ def update_mirror_stable_ci():
         for version_tag in version_tags():
             tags.append(f"{version_tag}-alpine{version}")
         tags.append(f"alpine{version}")
-        if version == default_alpine_version:
+        if version == latest_alpine_version:
             for version_tag in version_tags():
                 tags.append(f"{version_tag}-alpine")
             tags.append("alpine")
@@ -242,7 +241,7 @@ def update_nightly_ci():
         platforms = ",".join(platforms)
 
         tags = [f"nightly-alpine{version}"]
-        if version == default_alpine_version:
+        if version == latest_alpine_version:
             tags.append("nightly-alpine")
 
         versions += f"          - name: alpine{version}\n"
@@ -328,7 +327,7 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
         for version_tag in version_tags():
             tags.append(f"{version_tag}-alpine{version}")
         tags.append(f"alpine{version}")
-        if version == default_alpine_version:
+        if version == latest_alpine_version:
             for version_tag in version_tags():
                 tags.append(f"{version_tag}-alpine")
             tags.append("alpine")
