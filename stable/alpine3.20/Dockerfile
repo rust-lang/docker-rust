@@ -14,10 +14,22 @@ ENV RUSTUP_HOME=/usr/local/rustup \
 RUN set -eux; \
     arch="$(apk --print-arch)"; \
     case "$arch" in \
-        x86_64) rustArch='x86_64-unknown-linux-musl'; rustupSha256='e6599a1c7be58a2d8eaca66a80e0dc006d87bbcf780a58b7343d6e14c1605cb2' ;; \
-        aarch64) rustArch='aarch64-unknown-linux-musl'; rustupSha256='a97c8f56d7462908695348dd8c71ea6740c138ce303715793a690503a94fc9a9' ;; \
-        ppc64le) rustArch='powerpc64le-unknown-linux-musl'; rustupSha256='08423383d36362d93f8d85f208aa5004a7cef77b69b29fb779ba03ed0544e4f1' ;; \
-        *) echo >&2 "unsupported architecture: $arch"; exit 1 ;; \
+        x86_64) \
+            rustArch='x86_64-unknown-linux-musl'; \
+            rustupSha256='e6599a1c7be58a2d8eaca66a80e0dc006d87bbcf780a58b7343d6e14c1605cb2'; \
+            ;; \
+        aarch64) \
+            rustArch='aarch64-unknown-linux-musl'; \
+            rustupSha256='a97c8f56d7462908695348dd8c71ea6740c138ce303715793a690503a94fc9a9'; \
+            ;; \
+        ppc64le) \
+            rustArch='powerpc64le-unknown-linux-musl'; \
+            rustupSha256='08423383d36362d93f8d85f208aa5004a7cef77b69b29fb779ba03ed0544e4f1'; \
+            ;; \
+        *) \
+            echo >&2 "unsupported architecture: $arch"; \
+            exit 1; \
+            ;; \
     esac; \
     url="https://static.rust-lang.org/rustup/archive/1.28.2/${rustArch}/rustup-init"; \
     wget "$url"; \

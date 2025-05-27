@@ -121,13 +121,21 @@ def arch_cases_start(arch_cmd):
     return start
 
 def arch_cases_end():
-    end = '        *) echo >&2 "unsupported architecture: $arch"; exit 1 ;; \\\n'
+    end = ''
+    end += '        *) \\\n'
+    end += '            echo >&2 "unsupported architecture: $arch"; \\\n'
+    end += '            exit 1; \\\n'
+    end += '            ;; \\\n'
     end += '    esac'
     return end
 
 def arch_case(distro_arch, rust_arch):
     rustup_sha256 = rustup_hash(rust_arch)
-    return f"        {distro_arch}) rustArch='{rust_arch}'; rustupSha256='{rustup_sha256}' ;; \\\n"
+    arch_case_str = f"        {distro_arch}) \\\n"
+    arch_case_str += f"            rustArch='{rust_arch}'; \\\n"
+    arch_case_str += f"            rustupSha256='{rustup_sha256}'; \\\n"
+    arch_case_str += "            ;; \\\n"
+    return arch_case_str
 
 def render_template(
     template_path,
