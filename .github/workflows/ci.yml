@@ -36,6 +36,8 @@ jobs:
             variant: alpine3.20
           - name: alpine3.21
             variant: alpine3.21
+          - name: alpine3.22
+            variant: alpine3.22
 #VERSIONS
     name: ${{ matrix.name }}
     steps:

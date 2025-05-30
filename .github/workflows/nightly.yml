@@ -53,6 +53,11 @@ jobs:
             platforms: linux/amd64,linux/arm64
             tags: |
               nightly-alpine3.21
+          - name: alpine3.22
+            context: nightly/alpine3.22
+            platforms: linux/amd64,linux/arm64
+            tags: |
+              nightly-alpine3.22
               nightly-alpine
 #VERSIONS
     name: ${{ matrix.name }}
