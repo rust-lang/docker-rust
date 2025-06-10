@@ -226,7 +226,8 @@ def generate_stackbrew_library():
 # this file is generated via https://github.com/rust-lang/docker-rust/blob/{commit}/x.py
 
 Maintainers: Steven Fackler <sfackler@gmail.com> (@sfackler),
-             Scott Schafer <schaferjscott@gmail.com> (@Muscraft)
+             Scott Schafer <schaferjscott@gmail.com> (@Muscraft),
+             Jakub Beránek <berykubik@gmail.com> (@kobzol)
 GitRepo: https://github.com/rust-lang/docker-rust.git
 """
 
