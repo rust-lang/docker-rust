@@ -32,6 +32,10 @@ jobs:
             variant: bookworm
           - name: slim-bookworm
             variant: bookworm/slim
+          - name: trixie
+            variant: trixie
+          - name: slim-trixie
+            variant: trixie/slim
           - name: alpine3.20
             variant: alpine3.20
           - name: alpine3.21

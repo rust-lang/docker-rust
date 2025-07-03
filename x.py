@@ -35,6 +35,7 @@ DebianVariant = namedtuple("DebianVariant", ["name", "arches"])
 debian_variants = [
     DebianVariant("bullseye", debian_lts_arches),
     DebianVariant("bookworm", debian_lts_arches + debian_non_lts_arches),
+    DebianVariant("trixie", debian_lts_arches + debian_non_lts_arches),
 ]
 
 default_debian_variant = "bookworm"
