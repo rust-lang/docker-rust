@@ -55,17 +55,17 @@ jobs:
               nightly-trixie-slim
           - name: alpine3.20
             context: nightly/alpine3.20
-            platforms: linux/amd64,linux/arm64
+            platforms: linux/amd64,linux/arm64,linux/ppc64le
             tags: |
               nightly-alpine3.20
           - name: alpine3.21
             context: nightly/alpine3.21
-            platforms: linux/amd64,linux/arm64
+            platforms: linux/amd64,linux/arm64,linux/ppc64le
             tags: |
               nightly-alpine3.21
           - name: alpine3.22
             context: nightly/alpine3.22
-            platforms: linux/amd64,linux/arm64
+            platforms: linux/amd64,linux/arm64,linux/ppc64le
             tags: |
               nightly-alpine3.22
               nightly-alpine

@@ -45,6 +45,7 @@ AlpineArch = namedtuple("AlpineArch", ["bashbrew", "apk", "qemu", "rust"])
 alpine_arches = [
     AlpineArch("amd64", "x86_64", "linux/amd64", "x86_64-unknown-linux-musl"),
     AlpineArch("arm64v8", "aarch64", "linux/arm64", "aarch64-unknown-linux-musl"),
+    AlpineArch("ppc64le", "ppc64le", "linux/ppc64le", "powerpc64le-unknown-linux-musl"),
 ]
 
 alpine_versions = [
