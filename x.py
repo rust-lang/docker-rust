@@ -9,7 +9,7 @@ import sys
 rustup_version = "1.28.2"
 
 Channel = namedtuple("Channel", ["name", "rust_version"])
-stable = Channel("stable", "1.88.0")
+stable = Channel("stable", "1.89.0")
 nightly = Channel("nightly", "nightly")
 supported_channels = [
     stable,
