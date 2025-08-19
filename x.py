@@ -38,7 +38,7 @@ debian_variants = [
     DebianVariant("trixie", debian_lts_arches + debian_non_lts_arches),
 ]
 
-default_debian_variant = "bookworm"
+default_debian_variant = "trixie"
 
 AlpineArch = namedtuple("AlpineArch", ["bashbrew", "apk", "qemu", "rust"])
 
