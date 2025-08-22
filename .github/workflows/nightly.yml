@@ -43,13 +43,13 @@ jobs:
               nightly-bookworm-slim
           - name: trixie
             context: nightly/trixie
-            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le,linux/s390x
+            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le,linux/s390x,linux/riscv64
             tags: |
               nightly-trixie
               nightly
           - name: slim-trixie
             context: nightly/trixie/slim
-            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le,linux/s390x
+            platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/386,linux/ppc64le,linux/s390x,linux/riscv64
             tags: |
               nightly-trixie-slim
               nightly-slim
