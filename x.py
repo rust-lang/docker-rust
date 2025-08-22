@@ -30,12 +30,16 @@ debian_non_lts_arches = [
     DebianArch("s390x", "s390x", "linux/s390x", "s390x-unknown-linux-gnu"),
 ]
 
+debian_trixie_arches = [
+    DebianArch("riscv64", "riscv64", "linux/riscv64", "riscv64gc-unknown-linux-gnu"),
+]
+
 DebianVariant = namedtuple("DebianVariant", ["name", "arches"])
 
 debian_variants = [
     DebianVariant("bullseye", debian_lts_arches),
     DebianVariant("bookworm", debian_lts_arches + debian_non_lts_arches),
-    DebianVariant("trixie", debian_lts_arches + debian_non_lts_arches),
+    DebianVariant("trixie", debian_lts_arches + debian_non_lts_arches + debian_trixie_arches),
 ]
 
 default_debian_variant = "trixie"
