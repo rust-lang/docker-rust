@@ -122,6 +122,8 @@ jobs:
           ./crane copy "docker.io/rust:${{ matrix.name }}" "ghcr.io/${{ github.repository_owner }}/rust:${{ matrix.name }}"
           readarray -t TAGS <<< "${{ matrix.tags }}"
           for tag in "${TAGS[@]}"; do
-            ./crane tag "ghcr.io/${{ github.repository_owner }}/rust:${{ matrix.name }}" ${tag}
+            if [ -n "$tag" ]; then
+              ./crane tag "ghcr.io/${{ github.repository_owner }}/rust:${{ matrix.name }}" "${tag}"
+            fi 
           done
 
