@@ -150,6 +150,61 @@ def update_ci():
     rendered = split[0] + marker + versions + marker + split[2]
     write_file(file, rendered)
 
+def update_mirror_stable_ci():
+    file = ".github/workflows/mirror_stable.yml"
+    config = read_file(file)
+
+    versions = ""
+    for version in alpine_versions:
+        tags = []
+        for version_tag in version_tags():
+            tags.append(f"{version_tag}-alpine{version}")
+        tags.append(f"alpine{version}")
+        if version == default_alpine_version:
+            for version_tag in version_tags():
+                tags.append(f"{version_tag}-alpine")
+            tags.append("alpine")
+
+        versions += f"          - name: alpine{version}\n"
+        versions += "            tags: |\n"
+        for tag in tags:
+            versions += f"              {tag}\n"
+
+    for variant in debian_variants:
+        tags = []
+        for version_tag in version_tags():
+            tags.append(f"{version_tag}-{variant.name}")
+        tags.append(variant.name)
+        if variant.name == default_debian_variant:
+            for version_tag in version_tags():
+                tags.append(version_tag)
+            tags.append("latest")
+
+        versions += f"          - name: {variant.name}\n"
+        versions += "            tags: |\n"
+        for tag in tags:
+            versions += f"              {tag}\n"
+
+        tags = []
+        for version_tag in version_tags():
+            tags.append(f"{version_tag}-slim-{variant.name}")
+        tags.append(f"slim-{variant.name}")
+        if variant.name == default_debian_variant:
+            for version_tag in version_tags():
+                tags.append(f"{version_tag}-slim")
+            tags.append("slim")
+        
+        versions += f"          - name: slim-{variant.name}\n"
+        versions += "            tags: |\n"
+        for tag in tags:
+            versions += f"              {tag}\n" 
+
+    marker = "#VERSIONS\n"
+    split = config.split(marker)
+    rendered = split[0] + marker + versions + marker + split[2]
+    write_file(file, rendered)
+
+
 def update_nightly_ci():
     file = ".github/workflows/nightly.yml"
     config = read_file(file)
@@ -298,7 +353,8 @@ if __name__ == "__main__":
         update_debian()
         update_alpine()
         update_ci()
-        update_nightly_ci()
+        update_mirror_stable_ci()
+        update_nightly_ci() 
     elif task == "generate-stackbrew-library":
         generate_stackbrew_library()
     else:
