@@ -1,0 +1,127 @@
+name: Mirror Stable Images to GHCR
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run daily at midnight UTC
+    - cron: '0 0 * * *'
+
+jobs:
+  mirror:
+    name: DockerHub mirror
+    runs-on: ubuntu-24.04
+    if: github.repository == 'rust-lang/docker-rust'
+    permissions:
+      contents: read
+      # Needed to write to the ghcr.io registry
+      packages: write
+    strategy:
+      matrix:
+        include:
+#VERSIONS
+          - name: alpine3.20
+            tags: |
+              1-alpine3.20
+              1.90-alpine3.20
+              1.90.0-alpine3.20
+              alpine3.20
+          - name: alpine3.21
+            tags: |
+              1-alpine3.21
+              1.90-alpine3.21
+              1.90.0-alpine3.21
+              alpine3.21
+          - name: alpine3.22
+            tags: |
+              1-alpine3.22
+              1.90-alpine3.22
+              1.90.0-alpine3.22
+              alpine3.22
+              1-alpine
+              1.90-alpine
+              1.90.0-alpine
+              alpine
+          - name: bullseye
+            tags: |
+              1-bullseye
+              1.90-bullseye
+              1.90.0-bullseye
+              bullseye
+          - name: slim-bullseye
+            tags: |
+              1-slim-bullseye
+              1.90-slim-bullseye
+              1.90.0-slim-bullseye
+              slim-bullseye
+          - name: bookworm
+            tags: |
+              1-bookworm
+              1.90-bookworm
+              1.90.0-bookworm
+              bookworm
+          - name: slim-bookworm
+            tags: |
+              1-slim-bookworm
+              1.90-slim-bookworm
+              1.90.0-slim-bookworm
+              slim-bookworm
+          - name: trixie
+            tags: |
+              1-trixie
+              1.90-trixie
+              1.90.0-trixie
+              trixie
+              1
+              1.90
+              1.90.0
+              latest
+          - name: slim-trixie
+            tags: |
+              1-slim-trixie
+              1.90-slim-trixie
+              1.90.0-slim-trixie
+              slim-trixie
+              1-slim
+              1.90-slim
+              1.90.0-slim
+              slim
+#VERSIONS
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: rustopsbot
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Download crane in the current directory.
+      # We use crane because it copies the docker image for all the architectures available in
+      # DockerHub for the image.
+      # Learn more about crane at
+      # https://github.com/google/go-containerregistry/blob/main/cmd/crane/README.md
+      - name: Download crane
+        run: |
+          curl -sL "https://github.com/google/go-containerregistry/releases/download/${VERSION}/go-containerregistry_${OS}_${ARCH}.tar.gz" | tar -xzf -
+        env:
+          VERSION: v0.20.2
+          OS: Linux
+          ARCH: x86_64
+
+      - name: Copy image to GHCR
+        run: |
+          ./crane copy "docker.io/rust:${{ matrix.name }}" "ghcr.io/${{ github.repository_owner }}/rust:${{ matrix.name }}"
+          readarray -t TAGS <<< "${{ matrix.tags }}"
+          for tag in "${TAGS[@]}"; do
+            ./crane tag "ghcr.io/${{ github.repository_owner }}/rust:${{ matrix.name }}" ${tag}
+          done
+
