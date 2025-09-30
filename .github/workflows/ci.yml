@@ -45,7 +45,7 @@ jobs:
 #VERSIONS
     name: ${{ matrix.name }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: git clone https://github.com/docker-library/official-images.git ~/official-images
       - run: docker build -t rust:$RUST_VERSION-${{ matrix.name }} stable/${{ matrix.variant }}
       - run: ~/official-images/test/run.sh rust:$RUST_VERSION-${{ matrix.name }}
