@@ -28,9 +28,7 @@ RUN set -eux; \
     rm rustup-init; \
     chmod -R a+w $RUSTUP_HOME $CARGO_HOME; \
     \
-    apt-get remove -y --auto-remove \
-        wget \
-        ; \
+    apt-get purge -y --auto-remove wget -o APT::AutoRemove::RecommendsImportant=false; \
     rm -rf /var/lib/apt/lists/*; \
     \
     rustup --version; \
