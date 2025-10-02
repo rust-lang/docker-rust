@@ -224,14 +224,14 @@ def update_nightly_ci():
         versions += f"          - name: {variant.name}\n"
         versions += f"            context: nightly/{variant.name}\n"
         versions += f"            platforms: {platforms}\n"
-        versions += f"            tags: |\n"
+        versions += "            tags: |\n"
         for tag in tags:
             versions += f"              {tag}\n"
 
         versions += f"          - name: slim-{variant.name}\n"
         versions += f"            context: nightly/{variant.name}/slim\n"
         versions += f"            platforms: {platforms}\n"
-        versions += f"            tags: |\n"
+        versions += "            tags: |\n"
         for tag in tags:
             versions += f"              {tag}-slim\n"
 
@@ -248,7 +248,7 @@ def update_nightly_ci():
         versions += f"          - name: alpine{version}\n"
         versions += f"            context: nightly/alpine{version}\n"
         versions += f"            platforms: {platforms}\n"
-        versions += f"            tags: |\n"
+        versions += "            tags: |\n"
         for tag in tags:
             versions += f"              {tag}\n"
 
