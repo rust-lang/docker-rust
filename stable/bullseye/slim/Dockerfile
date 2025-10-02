@@ -50,11 +50,11 @@ RUN set -eux; \
     rm rustup-init; \
     chmod -R a+w $RUSTUP_HOME $CARGO_HOME; \
     \
-    rustup --version; \
-    cargo --version; \
-    rustc --version; \
-    \
     apt-get remove -y --auto-remove \
         wget \
         ; \
-    rm -rf /var/lib/apt/lists/*;
+    rm -rf /var/lib/apt/lists/*; \
+    \
+    rustup --version; \
+    cargo --version; \
+    rustc --version;
