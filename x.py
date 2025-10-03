@@ -34,15 +34,15 @@ debian_trixie_arches = [
     DebianArch("riscv64", "riscv64", "linux/riscv64", "riscv64gc-unknown-linux-gnu"),
 ]
 
-DebianVariant = namedtuple("DebianVariant", ["name", "arches"])
+latest_debian_release = "trixie"
 
-debian_variants = [
-    DebianVariant("bullseye", debian_lts_arches),
-    DebianVariant("bookworm", debian_lts_arches + debian_non_lts_arches),
-    DebianVariant("trixie", debian_lts_arches + debian_non_lts_arches + debian_trixie_arches),
+DebianRelease = namedtuple("DebianRelease", ["name", "arches"])
+ 
+debian_releases = [
+    DebianRelease("bullseye", debian_lts_arches),
+    DebianRelease("bookworm", debian_lts_arches + debian_non_lts_arches),
+    DebianRelease(latest_debian_release, debian_lts_arches + debian_non_lts_arches + debian_trixie_arches),
 ]
-
-default_debian_variant = "trixie"
 
 AlpineArch = namedtuple("AlpineArch", ["bashbrew", "apk", "qemu", "rust"])
 
@@ -52,13 +52,12 @@ alpine_arches = [
     AlpineArch("ppc64le", "ppc64le", "linux/ppc64le", "powerpc64le-unknown-linux-musl"),
 ]
 
+latest_alpine_version = "3.22"
 alpine_versions = [
     "3.20",
     "3.21",
-    "3.22",
+    latest_alpine_version,
 ]
-
-default_alpine_version = "3.22"
 
 def rustup_hash(arch):
     url = f"https://static.rust-lang.org/rustup/archive/{rustup_version}/{arch}/rustup-init.sha256"
@@ -77,54 +76,81 @@ def write_file(file, contents):
         f.write(contents)
 
 def update_debian():
-    end = '        *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \\\n'
-    end += '    esac'
-
-    template = read_file("Dockerfile-debian.template")
-    slim_template = read_file("Dockerfile-slim.template")
-
-    for variant in debian_variants:
-        arch_case = 'dpkgArch="$(dpkg --print-architecture)"; \\\n'
-        arch_case += '    case "${dpkgArch##*-}" in \\\n'
-        for arch in variant.arches:
-            hash = rustup_hash(arch.rust)
-            arch_case += f"        {arch.dpkg}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
-        arch_case += end
+    for release in debian_releases:
+        arch_cases_str = arch_cases_start("$(dpkg --print-architecture)")
+        for debian_arch in release.arches:
+            arch_cases_str += arch_case(debian_arch.dpkg, debian_arch.rust)
+        arch_cases_str += arch_cases_end()
 
         for channel in supported_channels:
-            rendered = template \
-                .replace("%%RUST-VERSION%%", channel.rust_version) \
-                .replace("%%RUSTUP-VERSION%%", rustup_version) \
-                .replace("%%DEBIAN-SUITE%%", variant.name) \
-                .replace("%%ARCH-CASE%%", arch_case)
-            write_file(f"{channel.name}/{variant.name}/Dockerfile", rendered)
+            render_template(
+                "Dockerfile-debian.template",
+                channel.rust_version,
+                release.name,
+                arch_cases_str,
+                f"{channel.name}/{release.name}/Dockerfile",
+            )
 
-            rendered = slim_template \
-                .replace("%%RUST-VERSION%%", channel.rust_version) \
-                .replace("%%RUSTUP-VERSION%%", rustup_version) \
-                .replace("%%DEBIAN-SUITE%%", variant.name) \
-                .replace("%%ARCH-CASE%%", arch_case)
-            write_file(f"{channel.name}/{variant.name}/slim/Dockerfile", rendered)
+            render_template(
+                "Dockerfile-slim.template",
+                channel.rust_version,
+                release.name,
+                arch_cases_str,
+                f"{channel.name}/{release.name}/slim/Dockerfile",
+            )
 
 def update_alpine():
-    arch_case = 'apkArch="$(apk --print-arch)"; \\\n'
-    arch_case += '    case "$apkArch" in \\\n'
+    arch_cases_str = arch_cases_start("$(apk --print-arch)")
     for arch in alpine_arches:
-        hash = rustup_hash(arch.rust)
-        arch_case += f"        {arch.apk}) rustArch='{arch.rust}'; rustupSha256='{hash}' ;; \\\n"
-    arch_case += '        *) echo >&2 "unsupported architecture: $apkArch"; exit 1 ;; \\\n'
-    arch_case += '    esac'
-
-    template = read_file("Dockerfile-alpine.template")
+        arch_cases_str += arch_case(arch.apk, arch.rust)
+    arch_cases_str += arch_cases_end()
 
     for version in alpine_versions:
         for channel in supported_channels:
-            rendered = template \
-                .replace("%%RUST-VERSION%%", channel.rust_version) \
-                .replace("%%RUSTUP-VERSION%%", rustup_version) \
-                .replace("%%TAG%%", version) \
-                .replace("%%ARCH-CASE%%", arch_case)
-            write_file(f"{channel.name}/alpine{version}/Dockerfile", rendered)
+            render_template(
+                "Dockerfile-alpine.template",
+                channel.rust_version,
+                version,
+                arch_cases_str,
+                f"{channel.name}/alpine{version}/Dockerfile",
+            )
+
+def arch_cases_start(arch_cmd):
+    start = f'arch="{arch_cmd}"; \\\n'
+    start += '    case "$arch" in \\\n'
+    return start
+
+def arch_cases_end():
+    end = ''
+    end += '        *) \\\n'
+    end += '            echo >&2 "unsupported architecture: $arch"; \\\n'
+    end += '            exit 1; \\\n'
+    end += '            ;; \\\n'
+    end += '    esac'
+    return end
+
+def arch_case(distro_arch, rust_arch):
+    rustup_sha256 = rustup_hash(rust_arch)
+    arch_case_str = f"        '{distro_arch}') \\\n"
+    arch_case_str += f"            rustArch='{rust_arch}'; \\\n"
+    arch_case_str += f"            rustupSha256='{rustup_sha256}'; \\\n"
+    arch_case_str += "            ;; \\\n"
+    return arch_case_str
+
+def render_template(
+    template_path,
+    rust_version,
+    docker_tag,
+    arch_cases,
+    rendered_path
+):
+    template = read_file(template_path)
+    rendered = template \
+        .replace("%%TAG%%", docker_tag) \
+        .replace("%%RUST-VERSION%%", rust_version) \
+        .replace("%%RUSTUP-VERSION%%", rustup_version) \
+        .replace("%%ARCH-CASE%%", arch_cases)
+    write_file(rendered_path, rendered)
 
 def update_ci():
     file = ".github/workflows/ci.yml"
@@ -135,11 +161,11 @@ def update_ci():
     rendered = split[0] + marker + f"      RUST_VERSION: {stable.rust_version}\n" + marker + split[2]
 
     versions = ""
-    for variant in debian_variants:
-        versions += f"          - name: {variant.name}\n"
-        versions += f"            variant: {variant.name}\n"
-        versions += f"          - name: slim-{variant.name}\n"
-        versions += f"            variant: {variant.name}/slim\n"
+    for release in debian_releases:
+        versions += f"          - name: {release.name}\n"
+        versions += f"            variant: {release.name}\n"
+        versions += f"          - name: slim-{release.name}\n"
+        versions += f"            variant: {release.name}/slim\n"
 
     for version in alpine_versions:
         versions += f"          - name: alpine{version}\n"
@@ -160,7 +186,7 @@ def update_mirror_stable_ci():
         for version_tag in version_tags():
             tags.append(f"{version_tag}-alpine{version}")
         tags.append(f"alpine{version}")
-        if version == default_alpine_version:
+        if version == latest_alpine_version:
             for version_tag in version_tags():
                 tags.append(f"{version_tag}-alpine")
             tags.append("alpine")
@@ -170,31 +196,31 @@ def update_mirror_stable_ci():
         for tag in tags:
             versions += f"              {tag}\n"
 
-    for variant in debian_variants:
+    for release in debian_releases:
         tags = []
         for version_tag in version_tags():
-            tags.append(f"{version_tag}-{variant.name}")
-        tags.append(variant.name)
-        if variant.name == default_debian_variant:
+            tags.append(f"{version_tag}-{release.name}")
+        tags.append(release.name)
+        if release.name == latest_debian_release:
             for version_tag in version_tags():
                 tags.append(version_tag)
             tags.append("latest")
 
-        versions += f"          - name: {variant.name}\n"
+        versions += f"          - name: {release.name}\n"
         versions += "            tags: |\n"
         for tag in tags:
             versions += f"              {tag}\n"
 
         tags = []
         for version_tag in version_tags():
-            tags.append(f"{version_tag}-slim-{variant.name}")
-        tags.append(f"slim-{variant.name}")
-        if variant.name == default_debian_variant:
+            tags.append(f"{version_tag}-slim-{release.name}")
+        tags.append(f"slim-{release.name}")
+        if release.name == latest_debian_release:
             for version_tag in version_tags():
                 tags.append(f"{version_tag}-slim")
             tags.append("slim")
         
-        versions += f"          - name: slim-{variant.name}\n"
+        versions += f"          - name: slim-{release.name}\n"
         versions += "            tags: |\n"
         for tag in tags:
             versions += f"              {tag}\n" 
@@ -211,27 +237,27 @@ def update_nightly_ci():
 
 
     versions = ""
-    for variant in debian_variants:
+    for release in debian_releases:
         platforms = []
-        for arch in variant.arches:
+        for arch in release.arches:
             platforms.append(f"{arch.qemu}")
         platforms = ",".join(platforms)
 
-        tags = [f"nightly-{variant.name}"]
-        if variant.name == default_debian_variant:
+        tags = [f"nightly-{release.name}"]
+        if release.name == latest_debian_release:
             tags.append("nightly")
 
-        versions += f"          - name: {variant.name}\n"
-        versions += f"            context: nightly/{variant.name}\n"
+        versions += f"          - name: {release.name}\n"
+        versions += f"            context: nightly/{release.name}\n"
         versions += f"            platforms: {platforms}\n"
-        versions += f"            tags: |\n"
+        versions += "            tags: |\n"
         for tag in tags:
             versions += f"              {tag}\n"
 
-        versions += f"          - name: slim-{variant.name}\n"
-        versions += f"            context: nightly/{variant.name}/slim\n"
+        versions += f"          - name: slim-{release.name}\n"
+        versions += f"            context: nightly/{release.name}/slim\n"
         versions += f"            platforms: {platforms}\n"
-        versions += f"            tags: |\n"
+        versions += "            tags: |\n"
         for tag in tags:
             versions += f"              {tag}-slim\n"
 
@@ -242,13 +268,13 @@ def update_nightly_ci():
         platforms = ",".join(platforms)
 
         tags = [f"nightly-alpine{version}"]
-        if version == default_alpine_version:
+        if version == latest_alpine_version:
             tags.append("nightly-alpine")
 
         versions += f"          - name: alpine{version}\n"
         versions += f"            context: nightly/alpine{version}\n"
         versions += f"            platforms: {platforms}\n"
-        versions += f"            tags: |\n"
+        versions += "            tags: |\n"
         for tag in tags:
             versions += f"              {tag}\n"
 
@@ -292,28 +318,28 @@ Maintainers: Steven Fackler <sfackler@gmail.com> (@sfackler),
 GitRepo: https://github.com/rust-lang/docker-rust.git
 """
 
-    for variant in debian_variants:
+    for release in debian_releases:
         tags = []
         for version_tag in version_tags():
-            tags.append(f"{version_tag}-{variant.name}")
-        tags.append(variant.name)
-        if variant.name == default_debian_variant:
+            tags.append(f"{version_tag}-{release.name}")
+        tags.append(release.name)
+        if release.name == latest_debian_release:
             for version_tag in version_tags():
                 tags.append(version_tag)
             tags.append("latest")
 
-        arches = variant.arches[:]
+        arches = release.arches[:]
 
         library += single_library(
                 tags,
                 map(lambda a: a.bashbrew, arches),
-                os.path.join(stable.name, variant.name))
+                os.path.join(stable.name, release.name))
 
         tags = []
         for version_tag in version_tags():
-            tags.append(f"{version_tag}-slim-{variant.name}")
-        tags.append(f"slim-{variant.name}")
-        if variant.name == default_debian_variant:
+            tags.append(f"{version_tag}-slim-{release.name}")
+        tags.append(f"slim-{release.name}")
+        if release.name == latest_debian_release:
             for version_tag in version_tags():
                 tags.append(f"{version_tag}-slim")
             tags.append("slim")
@@ -321,14 +347,14 @@ GitRepo: https://github.com/rust-lang/docker-rust.git
         library += single_library(
                 tags,
                 map(lambda a: a.bashbrew, arches),
-                os.path.join(stable.name, variant.name, "slim"))
+                os.path.join(stable.name, release.name, "slim"))
 
     for version in alpine_versions:
         tags = []
         for version_tag in version_tags():
             tags.append(f"{version_tag}-alpine{version}")
         tags.append(f"alpine{version}")
-        if version == default_alpine_version:
+        if version == latest_alpine_version:
             for version_tag in version_tags():
                 tags.append(f"{version_tag}-alpine")
             tags.append("alpine")
