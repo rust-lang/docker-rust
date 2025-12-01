@@ -4,6 +4,7 @@ LABEL org.opencontainers.image.source=https://github.com/rust-lang/docker-rust
 
 RUN apk add --no-cache \
         ca-certificates \
+        musl-dev \
         gcc
 
 ENV RUSTUP_HOME=/usr/local/rustup \
