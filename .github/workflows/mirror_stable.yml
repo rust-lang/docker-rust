@@ -37,6 +37,12 @@ jobs:
               1.91-alpine3.22
               1.91.1-alpine3.22
               alpine3.22
+          - name: alpine3.23
+            tags: |
+              1-alpine3.23
+              1.91-alpine3.23
+              1.91.1-alpine3.23
+              alpine3.23
               1-alpine
               1.91-alpine
               1.91.1-alpine
