@@ -68,6 +68,11 @@ jobs:
             platforms: linux/amd64,linux/arm64,linux/ppc64le
             tags: |
               nightly-alpine3.22
+          - name: alpine3.23
+            context: nightly/alpine3.23
+            platforms: linux/amd64,linux/arm64,linux/ppc64le
+            tags: |
+              nightly-alpine3.23
               nightly-alpine
 #VERSIONS
     name: ${{ matrix.name }}
