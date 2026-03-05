@@ -22,74 +22,74 @@ jobs:
           - name: alpine3.20
             tags: |
               1-alpine3.20
-              1.93-alpine3.20
-              1.93.1-alpine3.20
+              1.94-alpine3.20
+              1.94.0-alpine3.20
               alpine3.20
           - name: alpine3.21
             tags: |
               1-alpine3.21
-              1.93-alpine3.21
-              1.93.1-alpine3.21
+              1.94-alpine3.21
+              1.94.0-alpine3.21
               alpine3.21
           - name: alpine3.22
             tags: |
               1-alpine3.22
-              1.93-alpine3.22
-              1.93.1-alpine3.22
+              1.94-alpine3.22
+              1.94.0-alpine3.22
               alpine3.22
           - name: alpine3.23
             tags: |
               1-alpine3.23
-              1.93-alpine3.23
-              1.93.1-alpine3.23
+              1.94-alpine3.23
+              1.94.0-alpine3.23
               alpine3.23
               1-alpine
-              1.93-alpine
-              1.93.1-alpine
+              1.94-alpine
+              1.94.0-alpine
               alpine
           - name: bullseye
             tags: |
               1-bullseye
-              1.93-bullseye
-              1.93.1-bullseye
+              1.94-bullseye
+              1.94.0-bullseye
               bullseye
           - name: slim-bullseye
             tags: |
               1-slim-bullseye
-              1.93-slim-bullseye
-              1.93.1-slim-bullseye
+              1.94-slim-bullseye
+              1.94.0-slim-bullseye
               slim-bullseye
           - name: bookworm
             tags: |
               1-bookworm
-              1.93-bookworm
-              1.93.1-bookworm
+              1.94-bookworm
+              1.94.0-bookworm
               bookworm
           - name: slim-bookworm
             tags: |
               1-slim-bookworm
-              1.93-slim-bookworm
-              1.93.1-slim-bookworm
+              1.94-slim-bookworm
+              1.94.0-slim-bookworm
               slim-bookworm
           - name: trixie
             tags: |
               1-trixie
-              1.93-trixie
-              1.93.1-trixie
+              1.94-trixie
+              1.94.0-trixie
               trixie
               1
-              1.93
-              1.93.1
+              1.94
+              1.94.0
               latest
           - name: slim-trixie
             tags: |
               1-slim-trixie
-              1.93-slim-trixie
-              1.93.1-slim-trixie
+              1.94-slim-trixie
+              1.94.0-slim-trixie
               slim-trixie
               1-slim
-              1.93-slim
-              1.93.1-slim
+              1.94-slim
+              1.94.0-slim
               slim
 #VERSIONS
     steps:
