@@ -394,6 +394,7 @@ if __name__ == "__main__":
         if args.rust:
             rust_version = args.rust
             stable = Channel("stable", rust_version)
+            supported_channels[0] = stable
             write_versions(rust_version, rustup_version)
 
         if args.rustup:
