@@ -21,31 +21,31 @@ RUN set -eux; \
     case "$arch" in \
         'amd64') \
             rustArch='x86_64-unknown-linux-gnu'; \
-            rustupSha256='20a06e644b0d9bd2fbdbfd52d42540bdde820ea7df86e92e533c073da0cdd43c'; \
+            rustupSha256='4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10'; \
             ;; \
         'armhf') \
             rustArch='armv7-unknown-linux-gnueabihf'; \
-            rustupSha256='3b8daab6cc3135f2cd4b12919559e6adaee73a2fbefb830fadf0405c20231d61'; \
+            rustupSha256='124e02253af9128f9e27ea1ac929cbb73cf44cf35469d0f594a1b62f7b71fea1'; \
             ;; \
         'arm64') \
             rustArch='aarch64-unknown-linux-gnu'; \
-            rustupSha256='e3853c5a252fca15252d07cb23a1bdd9377a8c6f3efa01531109281ae47f841c'; \
+            rustupSha256='9732d6c5e2a098d3521fca8145d826ae0aaa067ef2385ead08e6feac88fa5792'; \
             ;; \
         'i386') \
             rustArch='i686-unknown-linux-gnu'; \
-            rustupSha256='a5db2c4b29d23e9b318b955dd0337d6b52e93933608469085c924e0d05b1df1f'; \
+            rustupSha256='5140e82096f96d1d8077f00eb312648e0e5106d101c9918d086f72cbc69bb3a1'; \
             ;; \
         'ppc64el') \
             rustArch='powerpc64le-unknown-linux-gnu'; \
-            rustupSha256='acd89c42b47c93bd4266163a7b05d3f26287d5148413c0d47b2e8a7aa67c9dc0'; \
+            rustupSha256='4bfff85bd3967d988e14567aa9cc6ab0ea386f0ffeff0f9f14d23f0103bf1f97'; \
             ;; \
         's390x') \
             rustArch='s390x-unknown-linux-gnu'; \
-            rustupSha256='726b7fd5d8805e73eab4a024a2889f8859d5a44e36041abac0a2436a52d42572'; \
+            rustupSha256='66c2c132428b6b77803facb02cbdf33b89d20c00bd20da142be8cb651f2e7cd8'; \
             ;; \
         'riscv64') \
             rustArch='riscv64gc-unknown-linux-gnu'; \
-            rustupSha256='09e64cc1b7a3e99adaa15dd2d46a3aad9d44d71041e2a96100d165c98a8fd7a7'; \
+            rustupSha256='7e43f2b2e6307d61da17a4dff61e6bceef408b8189822df64e1094590d2a70f9'; \
             ;; \
         *) \
             echo >&2 "unsupported architecture: $arch"; \
@@ -53,7 +53,7 @@ RUN set -eux; \
             ;; \
     esac; \
     \
-    url="https://static.rust-lang.org/rustup/archive/1.28.2/${rustArch}/rustup-init"; \
+    url="https://static.rust-lang.org/rustup/archive/1.29.0/${rustArch}/rustup-init"; \
     wget --progress=dot:giga "$url"; \
     echo "${rustupSha256} *rustup-init" | sha256sum -c -; \
     \
