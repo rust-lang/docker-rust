@@ -19,12 +19,6 @@ jobs:
       matrix:
         include:
 #VERSIONS
-          - name: alpine3.20
-            tags: |
-              1-alpine3.20
-              1.94-alpine3.20
-              1.94.1-alpine3.20
-              alpine3.20
           - name: alpine3.21
             tags: |
               1-alpine3.21
