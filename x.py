@@ -66,7 +66,6 @@ alpine_arches = [
 
 latest_alpine_version = "3.23"
 alpine_versions = [
-    "3.20",
     "3.21",
     "3.22",
     latest_alpine_version,
