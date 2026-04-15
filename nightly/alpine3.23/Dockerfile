@@ -29,6 +29,10 @@ RUN set -eux; \
             rustArch='powerpc64le-unknown-linux-musl'; \
             rustupSha256='8bee6e9158cbfba278df2b28941e64450be4b4aac423881ee380d3e85f774deb'; \
             ;; \
+        'riscv64') \
+            rustArch='riscv64gc-unknown-linux-musl'; \
+            rustupSha256='e29a1d528186309c19710c40a70ca4aa3bec975cbbeaa6b65493728e4366c89d'; \
+            ;; \
         *) \
             echo >&2 "unsupported architecture: $arch"; \
             exit 1; \
