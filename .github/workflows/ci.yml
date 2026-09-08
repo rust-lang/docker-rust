@@ -24,10 +24,6 @@ jobs:
       matrix:
         include:
 #VERSIONS
-          - name: bullseye
-            variant: bullseye
-          - name: slim-bullseye
-            variant: bullseye/slim
           - name: bookworm
             variant: bookworm
           - name: slim-bookworm

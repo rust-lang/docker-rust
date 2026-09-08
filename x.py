@@ -51,7 +51,6 @@ class DebianRelease(NamedTuple):
         return [debian_arches[name] for name in self.arch_names]
 
 debian_releases = [
-    DebianRelease("bullseye", ["amd64", "arm32v7", "arm64v8", "i386"]),
     DebianRelease("bookworm", ["amd64", "arm32v7", "arm64v8", "i386", "ppc64le"]),
     DebianRelease("trixie", ["amd64", "arm32v7", "arm64v8", "i386", "ppc64le", "s390x", "riscv64"], is_latest=True),
 ]
