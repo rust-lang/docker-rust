@@ -22,62 +22,62 @@ jobs:
           - name: alpine3.21
             tags: |
               1-alpine3.21
-              1.98-alpine3.21
-              1.98.1-alpine3.21
+              1.99-alpine3.21
+              1.99.0-alpine3.21
               alpine3.21
           - name: alpine3.22
             tags: |
               1-alpine3.22
-              1.98-alpine3.22
-              1.98.1-alpine3.22
+              1.99-alpine3.22
+              1.99.0-alpine3.22
               alpine3.22
           - name: alpine3.23
             tags: |
               1-alpine3.23
-              1.98-alpine3.23
-              1.98.1-alpine3.23
+              1.99-alpine3.23
+              1.99.0-alpine3.23
               alpine3.23
           - name: alpine3.24
             tags: |
               1-alpine3.24
-              1.98-alpine3.24
-              1.98.1-alpine3.24
+              1.99-alpine3.24
+              1.99.0-alpine3.24
               alpine3.24
               1-alpine
-              1.98-alpine
-              1.98.1-alpine
+              1.99-alpine
+              1.99.0-alpine
               alpine
           - name: bookworm
             tags: |
               1-bookworm
-              1.98-bookworm
-              1.98.1-bookworm
+              1.99-bookworm
+              1.99.0-bookworm
               bookworm
           - name: slim-bookworm
             tags: |
               1-slim-bookworm
-              1.98-slim-bookworm
-              1.98.1-slim-bookworm
+              1.99-slim-bookworm
+              1.99.0-slim-bookworm
               slim-bookworm
           - name: trixie
             tags: |
               1-trixie
-              1.98-trixie
-              1.98.1-trixie
+              1.99-trixie
+              1.99.0-trixie
               trixie
               1
-              1.98
-              1.98.1
+              1.99
+              1.99.0
               latest
           - name: slim-trixie
             tags: |
               1-slim-trixie
-              1.98-slim-trixie
-              1.98.1-slim-trixie
+              1.99-slim-trixie
+              1.99.0-slim-trixie
               slim-trixie
               1-slim
-              1.98-slim
-              1.98.1-slim
+              1.99-slim
+              1.99.0-slim
               slim
 #VERSIONS
     steps:
@@ -90,7 +90,7 @@ jobs:
         with:
           username: rustopsbot
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
-      
+
       - name: Login to GHCR
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
@@ -118,6 +118,6 @@ jobs:
           for tag in "${TAGS[@]}"; do
             if [ -n "$tag" ]; then
               ./crane tag "ghcr.io/${{ github.repository_owner }}/rust:${{ matrix.name }}" "${tag}"
-            fi 
+            fi
           done
 
