@@ -19,19 +19,19 @@ RUN set -eux; \
     case "$arch" in \
         'x86_64') \
             rustArch='x86_64-unknown-linux-musl'; \
-            rustupSha256='331228566cc931f32cd684f9bebc5956a5e5d7394c8d5de595f196a658ab98e6'; \
+            rustupSha256='2ba97d668c06dc4b1884f2a3fa6f4cf14b9bd0c1db379af7e4f87a705ff19edd'; \
             ;; \
         'aarch64') \
             rustArch='aarch64-unknown-linux-musl'; \
-            rustupSha256='1ddf36182ac5d1782dbeefcb9bea7f5f9412d88f4a0d5047b1564a223624e8c6'; \
+            rustupSha256='7fdbb23acf6495efee2e371580c52b365917551b4835090a225c44ac30915235'; \
             ;; \
         'ppc64le') \
             rustArch='powerpc64le-unknown-linux-musl'; \
-            rustupSha256='8bee6e9158cbfba278df2b28941e64450be4b4aac423881ee380d3e85f774deb'; \
+            rustupSha256='d0f97151d3ed165ca11c68b460cabf1b828dc605525ce68bb0ef8f62f78ac8b6'; \
             ;; \
         'riscv64') \
             rustArch='riscv64gc-unknown-linux-musl'; \
-            rustupSha256='e29a1d528186309c19710c40a70ca4aa3bec975cbbeaa6b65493728e4366c89d'; \
+            rustupSha256='4890a2396b60d0479a77917b05a78bdd7aa0ef5d29d44b8892314b5ffe2c1d5b'; \
             ;; \
         *) \
             echo >&2 "unsupported architecture: $arch"; \
@@ -39,7 +39,7 @@ RUN set -eux; \
             ;; \
     esac; \
     \
-    url="https://static.rust-lang.org/rustup/archive/1.29.1/${rustArch}/rustup-init"; \
+    url="https://static.rust-lang.org/rustup/archive/1.29.2/${rustArch}/rustup-init"; \
     wget "$url"; \
     echo "${rustupSha256} *rustup-init" | sha256sum -c -; \
     \
