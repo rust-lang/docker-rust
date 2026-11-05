@@ -334,6 +334,7 @@ Maintainers: Steven Fackler <sfackler@gmail.com> (@sfackler),
              Scott Schafer <schaferjscott@gmail.com> (@Muscraft),
              Jakub Beránek <berykubik@gmail.com> (@kobzol)
 GitRepo: https://github.com/rust-lang/docker-rust.git
+GitFetch: refs/heads/main
 """
 
     for release in debian_releases:
