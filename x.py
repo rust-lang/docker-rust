@@ -72,6 +72,23 @@ alpine_versions = [
     latest_alpine_version,
 ]
 
+UbuntuArch = namedtuple("UbuntuArch", ["bashbrew", "dpkg", "qemu", "rust"])
+
+ubuntu_arches = {
+    "amd64": UbuntuArch("amd64", "amd64", "linux/amd64", "x86_64-unknown-linux-gnu"),
+    "arm64v8": UbuntuArch("arm64v8", "arm64", "linux/arm64", "aarch64-unknown-linux-gnu"),
+    "i386": UbuntuArch("i386", "i386", "linux/386", "i686-unknown-linux-gnu"),
+    "ppc64le": UbuntuArch("ppc64le", "ppc64el", "linux/ppc64le", "powerpc64le-unknown-linux-gnu"),
+    "riscv64": UbuntuArch("riscv64", "riscv64", "linux/riscv64", "riscv64gc-unknown-linux-gnu"),
+}
+
+UbuntuRelease = namedtuple("UbuntuRelease", ["name", "arch_names", "is_latest"])
+
+ubuntu_releases = [
+    UbuntuRelease("noble", ["amd64", "arm64v8", "i386", "ppc64le", "riscv64"], is_latest=False),
+    UbuntuRelease("resolute", ["amd64", "arm64v8", "i386", "ppc64le", "riscv64"], is_latest=True),
+]
+
 def rustup_hash(arch):
     url = f"https://static.rust-lang.org/rustup/archive/{rustup_version}/{arch}/rustup-init.sha256"
     with request.urlopen(url) as f:
@@ -126,6 +143,23 @@ def update_alpine():
                 version,
                 arch_cases_str,
                 f"{channel.name}/alpine{version}/Dockerfile",
+            )
+
+def update_ubuntu():
+    for release in ubuntu_releases:
+        arch_cases_str = arch_cases_start("$(dpkg --print-architecture)")
+        for arch_name in release.arch_names:
+            ubuntu_arch = ubuntu_arches[arch_name]
+            arch_cases_str += arch_case(ubuntu_arch.dpkg, ubuntu_arch.rust)
+        arch_cases_str += arch_cases_end()
+
+        for channel in supported_channels:
+            render_template(
+                "Dockerfile-debian.template",
+                channel.rust_version,
+                release.name,
+                arch_cases_str,
+                f"{channel.name}/{release.name}/Dockerfile",
             )
 
 def arch_cases_start(arch_cmd):
@@ -195,6 +229,10 @@ def update_ci():
         versions += f"          - name: alpine{version}\n"
         versions += f"            variant: alpine{version}\n"
 
+    for release in ubuntu_releases:
+        versions += f"          - name: {release.name}\n"
+        versions += f"            variant: {release.name}\n"
+
     marker = "#VERSIONS\n"
     split = rendered.split(marker)
     rendered = split[0] + marker + versions + marker + split[2]
@@ -259,10 +297,30 @@ def update_nightly_ci():
     file = ".github/workflows/nightly.yml"
     config = read_file(file)
 
-
     versions = ""
     for release in debian_releases:
         platforms = ",".join(arch.qemu for arch in release.arches)
+
+        tags = [f"nightly-{release.name}"]
+        if release.is_latest:
+            tags.append("nightly")
+
+        versions += f"          - name: {release.name}\n"
+        versions += f"            context: nightly/{release.name}\n"
+        versions += f"            platforms: {platforms}\n"
+        versions += "            tags: |\n"
+        for tag in tags:
+            versions += f"              {tag}\n"
+
+        versions += f"          - name: slim-{release.name}\n"
+        versions += f"            context: nightly/{release.name}/slim\n"
+        versions += f"            platforms: {platforms}\n"
+        versions += "            tags: |\n"
+        for tag in tags:
+            versions += f"              {tag}-slim\n"
+
+    for release in ubuntu_releases:
+        platforms = ",".join(arch.qemu for arch in ubuntu_arches.values())
 
         tags = [f"nightly-{release.name}"]
         if release.is_latest:
@@ -409,6 +467,7 @@ if __name__ == "__main__":
 
         update_debian()
         update_alpine()
+        update_ubuntu()
         update_ci()
         update_mirror_stable_ci()
         update_nightly_ci()
