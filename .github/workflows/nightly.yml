@@ -44,6 +44,17 @@ jobs:
             tags: |
               nightly-trixie-slim
               nightly-slim
+          - name: noble
+            context: nightly/noble
+            platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/riscv64
+            tags: |
+              nightly-noble
+          - name: resolute
+            context: nightly/resolute
+            platforms: linux/amd64,linux/arm64,linux/ppc64le
+            tags: |
+              nightly-resolute
+              nightly
           - name: alpine3.21
             context: nightly/alpine3.21
             platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/riscv64

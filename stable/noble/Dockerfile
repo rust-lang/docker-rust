@@ -1,0 +1,47 @@
+FROM buildpack-deps:noble
+
+LABEL org.opencontainers.image.source=https://github.com/rust-lang/docker-rust
+
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH=/usr/local/cargo/bin:$PATH \
+    RUST_VERSION=1.100.0
+
+RUN set -eux; \
+    \
+    arch="$(dpkg --print-architecture)"; \
+    case "$arch" in \
+        'amd64') \
+            rustArch='x86_64-unknown-linux-gnu'; \
+            rustupSha256='b1c8cb14e30889e7e2999e6b69e62d9e9b9ffc0f4df8180564d306d9680e6c55'; \
+            ;; \
+        'arm64') \
+            rustArch='aarch64-unknown-linux-gnu'; \
+            rustupSha256='9f608c142e0e38a78957d0661ba1dfaf0b6fb37184cfaa4b9a0aa57af6184282'; \
+            ;; \
+        'ppc64el') \
+            rustArch='powerpc64le-unknown-linux-gnu'; \
+            rustupSha256='d5b321db031525fbee38b736846f07a16df22b354a1964bbb79ff83495dbc0c9'; \
+            ;; \
+        'riscv64') \
+            rustArch='riscv64gc-unknown-linux-gnu'; \
+            rustupSha256='e4a960952692ac3dfb5fa4f74e593517241b83e43a93fbdcf2213c811748f1ae'; \
+            ;; \
+        *) \
+            echo >&2 "unsupported architecture: $arch"; \
+            exit 1; \
+            ;; \
+    esac; \
+    \
+    url="https://static.rust-lang.org/rustup/archive/1.29.3/${rustArch}/rustup-init"; \
+    wget --progress=dot:giga "$url"; \
+    echo "${rustupSha256} *rustup-init" | sha256sum -c -; \
+    \
+    chmod +x rustup-init; \
+    ./rustup-init -y --no-modify-path --profile minimal --default-toolchain $RUST_VERSION --default-host ${rustArch}; \
+    rm rustup-init; \
+    chmod -R a+w $RUSTUP_HOME $CARGO_HOME; \
+    \
+    rustup --version; \
+    cargo --version; \
+    rustc --version;
