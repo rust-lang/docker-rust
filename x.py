@@ -77,7 +77,6 @@ UbuntuArch = namedtuple("UbuntuArch", ["bashbrew", "dpkg", "qemu", "rust"])
 ubuntu_arches = {
     "amd64": UbuntuArch("amd64", "amd64", "linux/amd64", "x86_64-unknown-linux-gnu"),
     "arm64v8": UbuntuArch("arm64v8", "arm64", "linux/arm64", "aarch64-unknown-linux-gnu"),
-    "i386": UbuntuArch("i386", "i386", "linux/386", "i686-unknown-linux-gnu"),
     "ppc64le": UbuntuArch("ppc64le", "ppc64el", "linux/ppc64le", "powerpc64le-unknown-linux-gnu"),
     "riscv64": UbuntuArch("riscv64", "riscv64", "linux/riscv64", "riscv64gc-unknown-linux-gnu"),
 }
@@ -85,8 +84,8 @@ ubuntu_arches = {
 UbuntuRelease = namedtuple("UbuntuRelease", ["name", "arch_names", "is_latest"])
 
 ubuntu_releases = [
-    UbuntuRelease("noble", ["amd64", "arm64v8", "i386", "ppc64le", "riscv64"], is_latest=False),
-    UbuntuRelease("resolute", ["amd64", "arm64v8", "i386", "ppc64le", "riscv64"], is_latest=True),
+    UbuntuRelease("noble", ["amd64", "arm64v8", "ppc64le", "riscv64"], is_latest=False),
+    UbuntuRelease("resolute", ["amd64", "arm64v8", "ppc64le"], is_latest=True),
 ]
 
 def rustup_hash(arch):

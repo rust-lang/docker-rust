@@ -19,10 +19,6 @@ RUN set -eux; \
             rustArch='aarch64-unknown-linux-gnu'; \
             rustupSha256='9f608c142e0e38a78957d0661ba1dfaf0b6fb37184cfaa4b9a0aa57af6184282'; \
             ;; \
-        'i386') \
-            rustArch='i686-unknown-linux-gnu'; \
-            rustupSha256='ef58377096e940ed8ba0d7f8841e6d125922d9d218e04897a05b7f667cf6f5c5'; \
-            ;; \
         'ppc64el') \
             rustArch='powerpc64le-unknown-linux-gnu'; \
             rustupSha256='d5b321db031525fbee38b736846f07a16df22b354a1964bbb79ff83495dbc0c9'; \
