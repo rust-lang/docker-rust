@@ -47,6 +47,22 @@ jobs:
               1.100-alpine
               1.100.0-alpine
               alpine
+          - name: noble
+            tags: |
+              1-noble
+              1.100-noble
+              1.100.0-noble
+              noble
+          - name: resolute
+            tags: |
+              1-resolute
+              1.100-resolute
+              1.100.0-resolute
+              resolute
+              1
+              1.100
+              1.100.0
+              latest
           - name: bookworm
             tags: |
               1-bookworm

@@ -81,10 +81,17 @@ ubuntu_arches = {
     "riscv64": UbuntuArch("riscv64", "riscv64", "linux/riscv64", "riscv64gc-unknown-linux-gnu"),
 }
 
-UbuntuRelease = namedtuple("UbuntuRelease", ["name", "arch_names", "is_latest"])
+class UbuntuRelease(NamedTuple):
+    name: str
+    arch_names: list[str]
+    is_latest: bool = False
+
+    @property
+    def arches(self) -> list[DebianArch]:
+        return [ubuntu_arches[name] for name in self.arch_names]
 
 ubuntu_releases = [
-    UbuntuRelease("noble", ["amd64", "arm64v8", "ppc64le", "riscv64"], is_latest=False),
+    UbuntuRelease("noble", ["amd64", "arm64v8", "ppc64le", "riscv64"]),
     UbuntuRelease("resolute", ["amd64", "arm64v8", "ppc64le"], is_latest=True),
 ]
 
@@ -147,8 +154,7 @@ def update_alpine():
 def update_ubuntu():
     for release in ubuntu_releases:
         arch_cases_str = arch_cases_start("$(dpkg --print-architecture)")
-        for arch_name in release.arch_names:
-            ubuntu_arch = ubuntu_arches[arch_name]
+        for ubuntu_arch in release.arches:
             arch_cases_str += arch_case(ubuntu_arch.dpkg, ubuntu_arch.rust)
         arch_cases_str += arch_cases_end()
 
@@ -257,6 +263,21 @@ def update_mirror_stable_ci():
         for tag in tags:
             versions += f"              {tag}\n"
 
+    for release in ubuntu_releases:
+        tags = []
+        for version_tag in version_tags():
+            tags.append(f"{version_tag}-{release.name}")
+        tags.append(release.name)
+        if release.is_latest:
+            for version_tag in version_tags():
+                tags.append(version_tag)
+            tags.append("latest")
+
+        versions += f"          - name: {release.name}\n"
+        versions += "            tags: |\n"
+        for tag in tags:
+            versions += f"              {tag}\n"
+
     for release in debian_releases:
         tags = []
         for version_tag in version_tags():
@@ -280,11 +301,11 @@ def update_mirror_stable_ci():
             for version_tag in version_tags():
                 tags.append(f"{version_tag}-slim")
             tags.append("slim")
-        
+
         versions += f"          - name: slim-{release.name}\n"
         versions += "            tags: |\n"
         for tag in tags:
-            versions += f"              {tag}\n" 
+            versions += f"              {tag}\n"
 
     marker = "#VERSIONS\n"
     split = config.split(marker)
@@ -319,7 +340,7 @@ def update_nightly_ci():
             versions += f"              {tag}-slim\n"
 
     for release in ubuntu_releases:
-        platforms = ",".join(arch.qemu for arch in ubuntu_arches.values())
+        platforms = ",".join(arch.qemu for arch in release.arches)
 
         tags = [f"nightly-{release.name}"]
         if release.is_latest:
@@ -331,13 +352,6 @@ def update_nightly_ci():
         versions += "            tags: |\n"
         for tag in tags:
             versions += f"              {tag}\n"
-
-        versions += f"          - name: slim-{release.name}\n"
-        versions += f"            context: nightly/{release.name}/slim\n"
-        versions += f"            platforms: {platforms}\n"
-        versions += "            tags: |\n"
-        for tag in tags:
-            versions += f"              {tag}-slim\n"
 
     for version in alpine_versions:
         platforms = ",".join(arch.qemu for arch in alpine_arches)
@@ -424,6 +438,23 @@ GitFetch: refs/heads/main
                 tags,
                 bashbrews,
                 os.path.join(stable.name, release.name, "slim"))
+
+    for release in ubuntu_releases:
+        tags = []
+        for version_tag in version_tags():
+            tags.append(f"{version_tag}-{release.name}")
+        tags.append(release.name)
+        if release.is_latest:
+            for version_tag in version_tags():
+                tags.append(version_tag)
+            tags.append("latest")
+
+        bashbrews = [a.bashbrew for a in release.arches]
+
+        library += single_library(
+                tags,
+                bashbrews,
+                os.path.join(stable.name, release.name))
 
     for version in alpine_versions:
         tags = []
